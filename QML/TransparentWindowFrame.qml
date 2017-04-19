@@ -1,0 +1,708 @@
+import QtQuick 2.0
+import QtQuick.Controls 2.0
+import QtQuick.Window 2.0
+
+Rectangle {
+    id: id_windowFrame
+
+    // variable need overwrite
+    property var windowLogoImg: undefined
+    property var windowLogoText: undefined //"logo text"
+    property color logoTextColor: undefined
+    property var rootWindow: undefined
+    property real rootWindowDefaultWidth: 0
+    property real rootWindowDefaultHeight: 0
+
+    // const variable
+    property real dpScale:  1.5
+    readonly property real dp: Math.max(Screen.pixelDensity * 25.4 / 160 * dpScale, 1)
+
+    // window state flag
+    property bool isWindowMaximized: false
+
+    //
+    signal sglThemeSettingVisible(bool visible)
+    signal sglWindowTitleBtnHoverd(bool hoverd)
+
+    // functions
+    function setWindowColor(color) {
+        id_windowBackgroundImg.source = "";
+        id_windowFrame.color = Qt.rgba(color.r, color.g, color.b, id_windowFrame.color.a);
+    }
+
+    function setWindowBorderColor(color) {
+        id_windowFrame.border.color = color;
+    }
+
+    function setWindowBackgroundPic(url) {
+        id_windowBackgroundImg.source = url;
+    }
+
+    function setWindowBorderVisible(visible) {
+        //id_windowFrame.border.width = visible ? 1 : 0;
+
+        // 防止绑定循环
+        if (visible) {
+            if (id_windowFrame.border.width === 0) {
+                id_windowFrame.border.width = 1;
+            }
+        }
+        else {
+            if (id_windowFrame.border.width === 1) {
+                id_windowFrame.border.width = 0;
+            }
+        }
+    }
+
+    function setWindowAlpha(alpha) {
+        var r = id_windowFrame.color.r;
+        var g = id_windowFrame.color.g;
+        var b = id_windowFrame.color.b;
+        id_windowFrame.color = Qt.rgba(r, g, b, alpha);
+    }
+
+    function hideWindowBorder() {
+        setWindowBorderVisible(false);
+    }
+
+    function hideWindowTitle() {
+        setWindowTitleVisible(false);
+    }
+
+    function restoreDefaultSetting() {
+        setWindowColor(Qt.rgba(0, 0, 0, 0.4));
+        setWindowBorderColor("white");
+        setWindowBorderVisible(true);
+        setWindowAlpha(0.4);
+        id_loaderThemeSetting.item.setWindowAlphaSlider(0.4);
+    }
+
+    function setWindowTitleVisible(visible) {
+        id_windowTitle.visible = visible
+        id_windowDrag.cursorShape = visible ? Qt.ArrowCursor : Qt.BlankCursor
+    }
+
+    function showFullScreen() {
+        rootWindow.showFullScreen();
+    }
+
+    function showNormalScreen() {
+        rootWindow.showNormal();
+    }
+
+    function switchFullScreen() {
+        if (rootWindow.visibility === Window.FullScreen) {
+            showNormalScreen();
+        }
+        else {
+            showFullScreen();
+        }
+    }
+
+    function restoreWindow() {
+        if (rootWindow.visibility === Window.FullScreen) {
+            showNormalScreen();
+        }
+        if (rootWindowDefaultWidth != 0 && rootWindowDefaultHeight != 0) {
+            rootWindow.width = rootWindowDefaultWidth;
+            rootWindow.height = rootWindowDefaultHeight;
+            rootWindow.x = (Screen.width-rootWindow.width)/2;
+            rootWindow.y = (Screen.height-rootWindow.height)/2;
+        }
+        setWindowBorderVisible(true);
+    }
+
+    // set rootwindow transparent
+    onParentChanged: {
+        rootWindow.flags = Qt.FramelessWindowHint | Qt.Window | Qt.WindowMinimizeButtonHint;
+        rootWindow.color = "transparent";
+    }
+
+    anchors { fill: parent }
+    color: Qt.rgba(0, 0, 0, 0.4)
+    border { width: 1; color: "white" }
+
+    Component.onCompleted: {
+        rootWindowDefaultWidth = rootWindow.width
+        rootWindowDefaultHeight = rootWindow.height
+
+        id_windowContent.sglSetWindowTitleVisible.connect(setWindowTitleVisible);
+        id_windowContent.sglSwitchFullScreen.connect(switchFullScreen);
+        id_windowContent.sglShowNormalScreen.connect(showNormalScreen);
+        id_windowContent.sglVideoPlaying.connect(hideWindowBorder);
+        id_windowContent.sglVideoPlaying.connect(hideWindowTitle)
+        id_windowContent.sglVideoStopped.connect(restoreWindow);
+        sglThemeSettingVisible.connect(id_windowContent.setLeftToolAreaAlwaysVisible);
+        sglWindowTitleBtnHoverd.connect(id_windowContent.setLeftToolAreaAlwaysVisible);
+        sglWindowTitleBtnHoverd.connect(id_windowDrag.restoreArrowCursorShape);
+    }
+
+    // mosue handle
+    MouseArea {
+        id: id_windowDrag
+        anchors { fill: parent }
+        hoverEnabled: true
+        property point clickedPos: "0,0"
+        property rect  clickedRect
+
+        readonly property int _LeftArea:        0
+        readonly property int _RightArea:       1
+        readonly property int _TopArea:         2
+        readonly property int _BottomArea:      4
+        readonly property int _TopLeftArea:     5
+        readonly property int _TopRightArea:    6
+        readonly property int _BottomLeftArea:  7
+        readonly property int _BottomRightArea: 8
+        readonly property int _CenterArea:      9
+        property int mouseArea: _CenterArea
+
+        function restoreArrowCursorShape(isArrow) {
+            if (isArrow) {
+                cursorShape = Qt.ArrowCursor;
+            }
+        }
+
+        onPressed: {
+            clickedPos = Qt.point(mouse.x, mouse.y);
+            clickedRect = Qt.rect(rootWindow.x, rootWindow.y, rootWindow.width, rootWindow.height);
+        }
+
+        onPositionChanged: {
+            const margin = 5*dp;
+
+            id_windowContent.setLeftToolAreaVisible(true);
+
+            if (pressed) {
+                if (cursorShape === Qt.ArrowCursor) {
+                    var delta = Qt.point(mouse.x-clickedPos.x, mouse.y-clickedPos.y)
+                    rootWindow.x += delta.x
+                    rootWindow.y += delta.y
+                }
+                else {
+                    var delta1 = Qt.point(mouse.x-clickedPos.x, mouse.y-clickedPos.y)
+                    switch (mouseArea) {
+                    case _BottomRightArea:
+                        rootWindow.width = clickedRect.width + delta1.x;
+                        rootWindow.height = clickedRect.height + delta1.y;
+                        break;
+                    case _TopLeftArea:
+                        break;
+                    case _RightArea:
+                        rootWindow.width = clickedRect.width + delta1.x;
+                        break;
+                    case _LeftArea:
+                        break;
+                    case _BottomArea:
+                        break;
+                    case _TopArea:
+                        break;
+
+                    }
+                }
+            }
+            else {
+                if (mouseX > (width-margin) && mouseY > (height-margin)) {
+                    sglWindowTitleBtnHoverd(true);
+                    cursorShape = Qt.SizeFDiagCursor;
+                    mouseArea = _BottomRightArea;
+                }
+                else if (mouseX < margin && mouseY < margin) {
+                    cursorShape = Qt.SizeFDiagCursor;
+                    mouseArea = _TopLeftArea;
+                }
+                else if (mouseX > width-margin && mouseY < margin) {
+                    cursorShape = Qt.SizeBDiagCursor;
+                    mouseArea = _TopRightArea;
+                }
+                else if (mouseX < margin && mouseY > height-margin) {
+                    cursorShape = Qt.SizeBDiagCursor;
+                    mouseArea = _BottomLeftArea;
+                }
+                else if (mouseX > width-margin) {
+                    sglWindowTitleBtnHoverd(true);
+                    cursorShape = Qt.SizeHorCursor;
+                    mouseArea = _RightArea;
+                }
+                else if (mouseX < margin) {
+                    sglWindowTitleBtnHoverd(true);
+                    cursorShape = Qt.SizeHorCursor;
+                    mouseArea = _LeftArea;
+                }
+                else if (mouseY > height-margin) {
+                    cursorShape = Qt.SizeVerCursor;
+                    mouseArea = _BottomArea;
+                }
+                else if (mouseY < margin) {
+                    cursorShape = Qt.SizeVerCursor;
+                    mouseArea = _TopArea;
+                }
+                else {
+                    cursorShape = Qt.ArrowCursor;
+                    ////sglWindowTitleBtnHoverd(false);
+                    mouseArea = _CenterArea;
+
+                }
+            }
+        }
+
+        onDoubleClicked: {
+            switchFullScreen();
+        }
+    }
+
+    // pinch scale
+//    PinchArea {
+//       id: id_windowPinchScale
+//        anchors { fill: parent }
+//        property real windowWidth: id_rootWindow.width
+//        property real windowHeight: id_rootWindow.height
+//        onPinchStarted: {
+//            windowWidth = id_rootWindow.width
+//            windowHeight = id_rootWindow.height
+//        }
+//        onPinchUpdated: {
+//            //console.log(pinch.scale)
+//            id_rootWindow.width = windowWidth * pinch.scale;
+//            id_rootWindow.height = windowHeight * pinch.scale;
+//        }
+//    }
+
+    // background img
+    Image {
+        id: id_windowBackgroundImg
+        anchors { fill: parent }
+        source: ""
+    }
+
+    // window top (logo and tools)
+    Rectangle  {
+        id: id_windowTitle
+        z: 10
+
+        // const variable: icon size
+        readonly property real  logoSize:           25 * dp
+        readonly property real  btnWidth:           40 * dp
+        readonly property real  btnHeight:          22 * dp
+        readonly property real  iconLineWidth:       1 * dp
+        readonly property real  logoMargin:          5 * dp
+        readonly property real  constSpacing:       15 * dp
+        readonly property color iconColor:          "white"
+        readonly property color iconHoveredColor:   "gray"
+
+        // size and color
+        anchors { left: parent.left; top: parent.top }
+        width: parent.width
+        height: logoSize + logoMargin * 2
+        color: "transparent"
+
+        // logo img
+        Image {
+            id: id_windowLogoImg
+            anchors { left: parent.left; top: parent.top; margins: parent.logoMargin }
+            width: id_windowTitle.logoSize
+            height: width
+            source: id_windowFrame.windowLogoImg
+
+            Text {
+                anchors { centerIn: parent }
+                text: typeof(id_windowFrame.windowLogoImg) === "undefined" ? "logo" : ""
+                color: "red"
+                font { pixelSize: 24; bold: true }
+            }
+        }
+
+        // logo text
+        Text {
+            id: id_windowLogoText
+            anchors { left: id_windowLogoImg.right; verticalCenter: parent.verticalCenter; leftMargin: 5 * dp }
+            text: typeof(id_windowFrame.windowLogoText) === "undefined" ? "logo text" : id_windowFrame.windowLogoText
+            color: id_windowFrame.logoTextColor
+            font { pointSize: 12 }
+        }
+
+        // theme setting
+        ToolButton {
+            id: id_windowTheme
+            anchors { top: parent.top; right: id_windowMenuMore.left; margins: 1 }
+            width: id_windowTitle.btnWidth
+            height: id_windowTitle.btnHeight
+            hoverEnabled: true
+
+            background: Loader {
+                anchors { fill: parent }
+                sourceComponent: com_btnBg
+                property bool hovered: parent.hovered
+            }
+
+            Image {
+                anchors { centerIn: parent }
+                width: parent.height * 2 / 3
+                height: width
+                source: "/Images/theme.png"
+            }
+
+            onClicked: {
+                id_loaderThemeSetting.visible = id_loaderThemeSetting.visible ? false : true;
+            }
+
+            onHoveredChanged: {
+                sglWindowTitleBtnHoverd(hovered);
+            }
+        }
+
+        // menu more
+        ToolButton {
+            id: id_windowMenuMore
+            anchors { top: parent.top; right: id_windowMini.left; margins: 1 }
+            width: id_windowTitle.btnWidth
+            height: id_windowTitle.btnHeight
+            hoverEnabled: true
+
+            background: Loader {
+                anchors { fill: parent }
+                sourceComponent: com_btnBg
+                property bool hovered: parent.hovered
+            }
+
+            onHoveredChanged: {
+                sglWindowTitleBtnHoverd(hovered);
+            }
+
+            Loader {
+                anchors { centerIn: parent }
+                width: parent.height / 2 + 1 * dp
+                height: parent.height / 2
+                property color iconLineColor: parent.hovered ? id_windowTitle.iconHoveredColor : id_windowTitle.iconColor
+                sourceComponent: parent.hovered ? com_windowMenuMoreHover : com_windowMenuMore
+            }
+
+            Component {
+                id: com_windowMenuMore
+                Loader { sourceComponent: com_windowMenuMorePub }
+            }
+
+            Component {
+                id: com_windowMenuMoreHover
+                Loader { sourceComponent: com_windowMenuMorePub }
+            }
+
+            Component {
+                id: com_windowMenuMorePub
+                Canvas {
+                    anchors { fill: parent }
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.strokeStyle = parent.parent.iconLineColor
+                        ctx.lineWidth = id_windowTitle.iconLineWidth;
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(0, ctx.lineWidth/2);
+                        ctx.lineTo(width, ctx.lineWidth/2);
+
+                        ctx.moveTo(0, height/2);
+                        ctx.lineTo(width, height/2);
+
+                        ctx.moveTo(0, height-ctx.lineWidth/2);
+                        ctx.lineTo(width, height-ctx.lineWidth/2);
+
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // mini window
+        ToolButton {
+            id: id_windowMini
+            anchors { top: parent.top; right: id_windowMax.left; margins: 1 }
+            width: id_windowTitle.btnWidth
+            height: id_windowTitle.btnHeight
+            hoverEnabled: true
+
+            background: Loader {
+                anchors { fill: parent }
+                sourceComponent: com_btnBg
+                property bool hovered: parent.hovered
+            }
+
+            Loader {
+                anchors { centerIn: parent }
+                width: parent.height / 2
+                height: width
+                property color iconLineColor: parent.hovered ? id_windowTitle.iconHoveredColor : id_windowTitle.iconColor
+                sourceComponent: parent.hovered ? com_windowMiniHover : com_windowMini
+            }
+
+            Component {
+                id: com_windowMini
+                Loader { sourceComponent: com_windowMiniPub }
+            }
+
+            Component {
+                id: com_windowMiniHover
+                Loader { sourceComponent: com_windowMiniPub }
+            }
+
+            Component {
+                id: com_windowMiniPub
+                Canvas {
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.strokeStyle = parent.parent.iconLineColor
+                        ctx.lineWidth = id_windowTitle.iconLineWidth;
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(0, height/2);
+                        ctx.lineTo(width, height/2);
+
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            onClicked: {
+                rootWindow.showMinimized();
+            }
+
+            onHoveredChanged: {
+                sglWindowTitleBtnHoverd(hovered);
+            }
+        }
+
+        // max window
+        ToolButton {
+            id: id_windowMax
+            anchors { top: parent.top; right: id_windowClose.left; margins: 1 }
+            width: id_windowTitle.btnWidth
+            height: id_windowTitle.btnHeight
+            hoverEnabled: true
+
+            background:  Loader {
+                anchors { fill: parent }
+                sourceComponent: com_btnBg
+                property bool hovered: parent.hovered
+            }
+
+            Loader {
+                anchors { centerIn: parent; }
+                width: parent.height / 2
+                height: width
+                property color iconLineColor: parent.hovered ? id_windowTitle.iconHoveredColor : id_windowTitle.iconColor
+                sourceComponent: parent.hovered ? (id_windowFrame.isWindowMaximized ? com_windowMaxHover : com_windowNomalHover) : (id_windowFrame.isWindowMaximized ? com_windowMax : com_windowNomal)
+            }
+
+            Component {
+                id: com_windowNomal
+                Loader { sourceComponent: com_windowNomalPub }
+            }
+
+            Component {
+                id: com_windowNomalHover
+                Loader { sourceComponent: com_windowNomalPub }
+            }
+
+            Component {
+                id: com_windowMax
+                Loader { sourceComponent: com_windowMaxPub }
+            }
+
+            Component {
+                id: com_windowMaxHover
+                Loader { sourceComponent: com_windowMaxPub }
+            }
+
+            Component {
+                id: com_windowNomalPub
+                Canvas {
+                    anchors { fill: parent }
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.strokeStyle = parent.parent.iconLineColor;
+                        ctx.lineWidth = id_windowTitle.iconLineWidth;
+                        ctx.beginPath();
+                        ctx.rect(ctx.lineWidth/2, width*1/11+ctx.lineWidth/2, width-ctx.lineWidth, width*9/11-ctx.lineWidth);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            Component {
+                id: com_windowMaxPub
+                Canvas {
+                    anchors { fill: parent }
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.strokeStyle = parent.parent.iconLineColor;
+                        ctx.lineWidth = id_windowTitle.iconLineWidth;
+
+                        ctx.beginPath();
+
+                        ctx.rect(ctx.lineWidth/2, 2*dp+ctx.lineWidth/2, width-2*dp-ctx.lineWidth, width-2*dp-ctx.lineWidth);
+
+                        ctx.moveTo(2*dp+ctx.lineWidth/2, 2*dp+ctx.lineWidth/2);
+                        ctx.lineTo(2*dp+ctx.lineWidth/2, ctx.lineWidth/2);
+                        ctx.lineTo(width-ctx.lineWidth/2, ctx.lineWidth/2);
+                        ctx.lineTo(width-ctx.lineWidth/2, height-2*dp-ctx.lineWidth/2);
+                        ctx.lineTo(width-2*dp-ctx.lineWidth/2, height-2*dp-ctx.lineWidth/2)
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            onClicked: {
+                if (id_windowFrame.isWindowMaximized) {
+                    rootWindow.showNormal();
+                    id_windowFrame.isWindowMaximized = false;
+                }
+                else {
+                    rootWindow.showMaximized();
+                    id_windowFrame.isWindowMaximized = true;
+                }
+            }
+
+            onHoveredChanged: {
+                sglWindowTitleBtnHoverd(hovered);
+            }
+        }
+
+        // close window
+        ToolButton {
+            id: id_windowClose
+            anchors { top: parent.top; right: parent.right; margins: 1 }
+            width: id_windowTitle.btnWidth
+            height: id_windowTitle.btnHeight
+            hoverEnabled: true
+
+            background:  Loader {
+                anchors { fill: parent }
+                sourceComponent: com_btnBg
+                property bool hovered: parent.hovered
+            }
+
+            Loader {
+                anchors { centerIn: parent }
+                width: parent.height / 2
+                height: width
+                property color iconLineColor: parent.hovered ? "red" : id_windowTitle.iconColor
+                sourceComponent: parent.hovered ? com_closeBtnHover : com_closeBtn
+            }
+
+            Component {
+                id: com_closeBtn
+                Loader { sourceComponent: com_closeBtnPub }
+            }
+
+            Component {
+                id: com_closeBtnHover
+                Loader { sourceComponent: com_closeBtnPub }
+            }
+
+            Component {
+                id: com_closeBtnPub
+                Canvas {
+                    anchors { fill: parent }
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.strokeStyle = parent.parent.iconLineColor;
+                        ctx.lineWidth = id_windowTitle.iconLineWidth;
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(width, height);
+
+                        ctx.moveTo(width, 0);
+                        ctx.lineTo(0, height);
+
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            onClicked: {
+                Qt.quit();
+            }
+
+            onHoveredChanged: {
+                sglWindowTitleBtnHoverd(hovered);
+            }
+        }
+
+        // line
+        Rectangle {
+            id: line
+            width: 1
+            anchors { top: id_windowTheme.bottom; bottom: id_loaderThemeSetting.top; horizontalCenter: id_windowTheme.horizontalCenter }
+        }
+
+        // window theme setting loader
+        Loader {
+            id: id_loaderThemeSetting
+            visible: false;
+            anchors { right: parent.right; margins: 10 * dp; topMargin: 50 * dp }
+            source: "ThemeSetting.qml"
+
+            states: [
+                State {
+                    name: "startChors"
+                    // when: visible == false
+                    AnchorChanges {
+                        target: id_loaderThemeSetting
+                        anchors { bottom: parent.top }
+                    }
+                },
+                State {
+                    name: "endAnchors"
+                    // when: visible == true
+                    AnchorChanges {
+                        target: id_loaderThemeSetting
+                        anchors { top: parent.bottom }
+                    }
+                }
+            ]
+
+            transitions: Transition {
+                AnchorAnimation {
+                    duration: 200;
+                    easing.type: Easing.InOutQuad}
+            }
+
+            onLoaded: {
+                // init item
+                item.handleId = id_windowFrame;
+                item.dp = id_windowFrame.dp;
+                item.setWindowAlphaSlider(id_windowFrame.color.a);
+
+                // bind signals of item
+                item.sglChooseWindowColor.connect(setWindowColor);
+                item.sglChooseWindowBorderColor.connect(setWindowBorderColor);
+                item.sglChooseBackgroundImg.connect(setWindowBackgroundPic);
+                item.sglSetWindowBorderVisible.connect(setWindowBorderVisible);
+                item.sglSetWindowAlpha.connect(setWindowAlpha);
+                item.sglRestoreDefaultSetting.connect(restoreDefaultSetting);
+            }
+
+            onVisibleChanged: {
+                state = visible ? "endAnchors" : "startAnchors";
+                sglThemeSettingVisible(visible);
+            }
+        }
+
+        Component {
+            id: com_btnBg
+            Rectangle {
+                anchors { fill: parent }
+                color: parent.parent.hovered ? Qt.rgba(0, 0, 0, 0.6) : "transparent"
+            }
+        }
+    }
+
+    // window content
+    WindowContent {
+        id: id_windowContent
+        dp: id_windowFrame.dp
+        anchors { fill: parent; margins: 1 }
+    }
+}
