@@ -29,7 +29,8 @@ RCC_DIR += $$PWD/../TEMP
 MOC_DIR += $$PWD/../TEMP
 
 SOURCES += main.cpp \
-    Application.cpp
+    Application.cpp \
+    MusicPlaylistModel.cpp
 
 RESOURCES += qml.qrc
 
@@ -43,4 +44,5 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    Application.h
+    Application.h \
+    MusicPlaylistModel.h

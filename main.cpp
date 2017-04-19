@@ -1,7 +1,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QtQml>
-#include "application.h"
+
+#include "Application.h"
+#include "MusicPlaylistModel.h"
 
 #ifdef Q_OS_WIN
 #include <Windows.h>
@@ -21,6 +23,8 @@ int main(int argc, char *argv[])
         application.setCommandArg(argv[1]);
     }
     qmlRegisterType<Application>("QtCPlusPlus.Application", 1, 0, "Application");
+
+    qmlRegisterType<MusicPlaylistModel>("QtCPlusPlus.MusicPlaylistModel", 1, 0, "MusicPlaylistModel");
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/QML/main.qml")));
