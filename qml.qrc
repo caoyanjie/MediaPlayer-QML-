@@ -7,11 +7,20 @@
         <file>Images/theme.png</file>
         <file>QML/ThemeSetting.qml</file>
         <file>QML/TransparentWindowFrame.qml</file>
-        <file>QML/WindowContent.qml</file>
+        <file>QML/VideoContent.qml</file>
         <file>QML/CustomSlider.qml</file>
         <file>Images/logo.png</file>
         <file>QML/VideoBottomToolArea.qml</file>
         <file>Images/videoOpener.png</file>
         <file>QML/CustomSwitchButton.qml</file>
+        <file>QML/MusicContent.qml</file>
+        <file>QML/MusicBottomToolArea.qml</file>
+        <file>Images/music.png</file>
+        <file>Images/video.png</file>
+        <file>QML/CustomComboBox.qml</file>
+        <file>Images/cd.png</file>
+        <file>QML/CustomCheckBox.qml</file>
+        <file>Images/volume.png</file>
+        <file>Images/playMode_loop.png</file>
     </qresource>
 </RCC>

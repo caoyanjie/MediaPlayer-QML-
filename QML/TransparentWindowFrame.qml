@@ -126,14 +126,6 @@ Rectangle {
         rootWindowDefaultWidth = rootWindow.width
         rootWindowDefaultHeight = rootWindow.height
 
-        id_windowContent.sglSetWindowTitleVisible.connect(setWindowTitleVisible);
-        id_windowContent.sglSwitchFullScreen.connect(switchFullScreen);
-        id_windowContent.sglShowNormalScreen.connect(showNormalScreen);
-        id_windowContent.sglVideoPlaying.connect(hideWindowBorder);
-        id_windowContent.sglVideoPlaying.connect(hideWindowTitle)
-        id_windowContent.sglVideoStopped.connect(restoreWindow);
-        sglThemeSettingVisible.connect(id_windowContent.setLeftToolAreaAlwaysVisible);
-        sglWindowTitleBtnHoverd.connect(id_windowContent.setLeftToolAreaAlwaysVisible);
         sglWindowTitleBtnHoverd.connect(id_windowDrag.restoreArrowCursorShape);
     }
 
@@ -170,7 +162,9 @@ Rectangle {
         onPositionChanged: {
             const margin = 5*dp;
 
-            id_windowContent.setLeftToolAreaVisible(true);
+            if (id_windowContent.source == "qrc:/QML/VideoContent.qml") {
+                id_windowContent.item.setLeftToolAreaVisible(true);
+            }
 
             if (pressed) {
                 if (cursorShape === Qt.ArrowCursor) {
@@ -318,6 +312,102 @@ Rectangle {
             text: typeof(id_windowFrame.windowLogoText) === "undefined" ? "logo text" : id_windowFrame.windowLogoText
             color: id_windowFrame.logoTextColor
             font { pointSize: 12 }
+        }
+
+        // music player switch
+        Rectangle {
+            id: id_musicPlayerSwitch
+            anchors { left: id_windowLogoText.right; top: parent.top; margins: 5*dp; leftMargin: 40*dp }
+            width: id_windowTitle.logoSize
+            height: width
+            radius: width / 2
+            color: Qt.rgba(0, 0, 0, 0)
+
+            Text {
+                id: id_musicPlayerSwitchText
+                anchors { centerIn: parent }
+                width: parent.width / 2
+                height: width
+                color: "white"
+                //source: "/Images/music.png"
+                text: qsTr("音")
+            }
+
+            ToolTip {
+                id: id_musicPlayerSwitchTooltip
+                text: qsTr("切到音乐播放器")
+                visible: false
+            }
+
+            MouseArea {
+                anchors { fill: parent }
+                hoverEnabled: true
+                onClicked: {
+                    id_musicPlayerSwitch.color = Qt.rgba(1, 1, 1, 1);
+                    id_musicPlayerSwitchText.color = "black";
+
+                    id_videoPlayerSwitch.color = Qt.rgba(0, 0, 0, 0);
+                    id_videoPlayerSwitchText.color = "white";
+
+                    id_windowContent.switchToMusicPlayer();
+                }
+                onEntered: {
+                    id_musicPlayerSwitchTooltip.visible = true;
+                    sglWindowTitleBtnHoverd(true);
+                }
+                onExited: {
+                    id_musicPlayerSwitchTooltip.visible = false;
+                    sglWindowTitleBtnHoverd(false);
+                }
+            }
+        }
+
+        // video player switch
+        Rectangle {
+            id: id_videoPlayerSwitch
+            anchors { left: id_musicPlayerSwitch.right; top: parent.top; margins: id_musicPlayerSwitch.anchors.margins; leftMargin: id_musicPlayerSwitch.anchors.leftMargin }
+            width: id_musicPlayerSwitch.width
+            height: width
+            radius: width / 2
+            color: Qt.rgba(1, 1, 1, 1)
+
+            Text {
+                id: id_videoPlayerSwitchText
+                anchors { centerIn: parent }
+                width: parent.width / 2
+                height: width
+                color: "black"
+                //source: "/Images/video.png"
+                text : qsTr("视")
+            }
+
+            ToolTip {
+                id: id_videoPlayerSwitchTooltip
+                text: qsTr("切到视频播放器")
+                visible: false
+            }
+
+            MouseArea {
+                anchors { fill: parent }
+                hoverEnabled: true
+                onClicked: {
+                    id_musicPlayerSwitch.color = Qt.rgba(0, 0, 0, 0);
+                    id_musicPlayerSwitchText.color = "white";
+
+                    id_videoPlayerSwitch.color = Qt.rgba(1, 1, 1, 1);
+                    id_videoPlayerSwitchText.color = "black";
+
+                    id_windowContent.switchToVideoPlayer();
+                }
+                onEntered: {
+                    id_videoPlayerSwitchTooltip.visible = true;
+                    sglWindowTitleBtnHoverd(true);
+                }
+                onExited: {
+                    id_videoPlayerSwitchTooltip.visible = false;
+                    sglWindowTitleBtnHoverd(false);
+                }
+            }
         }
 
         // theme setting
@@ -700,9 +790,43 @@ Rectangle {
     }
 
     // window content
-    WindowContent {
+    Loader {
         id: id_windowContent
-        dp: id_windowFrame.dp
         anchors { fill: parent; margins: 1 }
+
+        function switchToMusicPlayer() {
+            id_windowContent.item.sglSetWindowTitleVisible.disconnect(setWindowTitleVisible);
+            id_windowContent.item.sglSwitchFullScreen.disconnect(switchFullScreen);
+            id_windowContent.item.sglShowNormalScreen.disconnect(showNormalScreen);
+            id_windowContent.item.sglVideoPlaying.disconnect(hideWindowBorder);
+            id_windowContent.item.sglVideoPlaying.disconnect(hideWindowTitle)
+            id_windowContent.item.sglVideoStopped.disconnect(restoreWindow);
+            sglThemeSettingVisible.disconnect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
+            sglWindowTitleBtnHoverd.disconnect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
+
+            source = "MusicContent.qml";
+
+        }
+
+        function switchToVideoPlayer() {
+            source = "VideoContent.qml";
+
+            id_windowContent.item.sglSetWindowTitleVisible.connect(setWindowTitleVisible);
+            id_windowContent.item.sglSwitchFullScreen.connect(switchFullScreen);
+            id_windowContent.item.sglShowNormalScreen.connect(showNormalScreen);
+            id_windowContent.item.sglVideoPlaying.connect(hideWindowBorder);
+            id_windowContent.item.sglVideoPlaying.connect(hideWindowTitle)
+            id_windowContent.item.sglVideoStopped.connect(restoreWindow);
+            sglThemeSettingVisible.connect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
+            sglWindowTitleBtnHoverd.connect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
+        }
+
+        onLoaded: {
+            item.dp = id_windowFrame.dp;
+        }
+
+        Component.onCompleted: {
+            switchToVideoPlayer();
+        }
     }
 }

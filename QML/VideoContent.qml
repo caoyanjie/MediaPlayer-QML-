@@ -59,7 +59,6 @@ Rectangle {
         id_bottomToolArea.sglShowNormalScreen.connect(sglShowNormalScreen);
 
         var commandArg = id_application.getFileUrl();
-        console.log(typeof(commandArg));
         if (commandArg != "") {				// 不能用 !==
             playMedia(commandArg);
         }

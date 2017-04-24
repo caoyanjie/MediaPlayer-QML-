@@ -10,7 +10,8 @@ public:
     explicit MusicPlaylistModel(QObject *parent = 0);
     virtual ~MusicPlaylistModel() = default;
 
-    Q_INVOKABLE void addMusic(const QString &musicListName, const QString &musicName);
+    Q_INVOKABLE void addMusic(const QString &musicListName, const QString &musicFullPath);
+    Q_INVOKABLE QModelIndex getMusicListIndex(const QString &musicListName);
 
     QHash<int, QByteArray> roleNames() const override;
 

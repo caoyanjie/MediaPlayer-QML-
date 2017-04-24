@@ -1,4 +1,5 @@
 #include "MusicPlaylistModel.h"
+#include <QDebug>
 
 MusicPlaylistModel::MusicPlaylistModel(QObject *parent) : QStandardItemModel(parent)
 {
@@ -7,12 +8,18 @@ MusicPlaylistModel::MusicPlaylistModel(QObject *parent) : QStandardItemModel(par
     createMusicListItem(tr("默认列表"));
 }
 
-void MusicPlaylistModel::addMusic(const QString &musicListName, const QString &musicName)
+void MusicPlaylistModel::addMusic(const QString &musicListName, const QString &musicFullPath)
 {
-    auto music = new QStandardItem(musicName);
+    auto music = new QStandardItem(musicFullPath);
 
     QStandardItem *musicList = getMusicListItem(musicListName);
     musicList->appendRow(music);
+}
+
+QModelIndex MusicPlaylistModel::getMusicListIndex(const QString &musicListName)
+{
+    const QStandardItem *item = this->findItems(musicListName).at(0);
+    return indexFromItem(item);
 }
 
 QHash<int, QByteArray> MusicPlaylistModel::roleNames() const
