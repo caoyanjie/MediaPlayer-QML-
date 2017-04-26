@@ -22,5 +22,6 @@
         <file>QML/CustomCheckBox.qml</file>
         <file>Images/volume.png</file>
         <file>Images/playMode_loop.png</file>
+        <file>QML/MusicLyric.qml</file>
     </qresource>
 </RCC>

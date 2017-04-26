@@ -6,7 +6,6 @@ const char* Application::commandArg;
 
 Application::Application(QObject *parent) : QObject(parent)
 {
-
 }
 
 QString Application::getCommandArg()

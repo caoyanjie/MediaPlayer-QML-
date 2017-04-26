@@ -30,7 +30,9 @@ MOC_DIR += $$PWD/../TEMP
 
 SOURCES += main.cpp \
     Application.cpp \
-    MusicPlaylistModel.cpp
+    MusicPlaylistModel.cpp \
+    Network.cpp \
+    LrcViewer.cpp
 
 RESOURCES += qml.qrc
 
@@ -45,4 +47,6 @@ include(deployment.pri)
 
 HEADERS += \
     Application.h \
-    MusicPlaylistModel.h
+    MusicPlaylistModel.h \
+    Network.h \
+    LrcViewer.h

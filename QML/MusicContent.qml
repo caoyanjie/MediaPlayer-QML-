@@ -3,9 +3,13 @@ import QtQuick.Controls 1.4
 import QtQuick.Controls 2.0
 import QtQuick.controls.Private 1.0
 import QtQuick.Controls.Styles 1.4
-import QtMultimedia 5.7
 import QtQuick.Dialogs 1.2
+
+import QtMultimedia 5.7
+
 import QtCPlusPlus.MusicPlaylistModel 1.0
+import QtCPlusPlus.Network 1.0
+import QtCPlusPlus.LrcViewer 1.0
 
 Item {
     id: id_musicContent
@@ -17,6 +21,21 @@ Item {
         return result;
     }
 
+    function getFileFullPathFromFileUrl(url) {
+        return url.toString().substring(8);
+    }
+
+    Network {
+        id: id_network
+        onLrcDownloadFinished: {
+            id_lrcViewer.resolveLrc(getFileFullPathFromFileUrl(id_musicPlayer.source));
+        }
+    }
+
+    LrcViewer {
+        id: id_lrcViewer
+    }
+
     MediaPlayer {
         id: id_musicPlayer
         autoPlay: true
@@ -25,10 +44,23 @@ Item {
             id_musicBottomToolArea.setMusicTitle(metaData.title);
             id_musicBottomToolArea.setMusicAuthor(metaData.author);
             id_musicBottomToolArea.setMusicDuration(duration);
+
+            var musicFileFullPath = getFileFullPathFromFileUrl(source);
+            if (!id_lrcViewer.resolveLrc(musicFileFullPath)) {
+                id_musicLyric.setCurrentLrc("正在下载歌词......");
+                id_network.downloadLrc(musicFileFullPath);
+            }
         }
 
         onPositionChanged: {
             id_musicBottomToolArea.updateMusicPlayingPosition(position);
+            var currentLrc = id_lrcViewer.getCurrentLrc(position);
+            if (currentLrc !== '' && currentLrc !== id_musicLyric.getCurrentLrc()) {
+                var currentLrcDuration = id_lrcViewer.getCurrentLrcDuration(position);
+                var afterLinesLrc = id_lrcViewer.getAfterLinesLrc(position, 5);
+                id_musicLyric.setCurrentLrc(currentLrc, currentLrcDuration);
+                id_musicLyric.setAfterLrc(afterLinesLrc);
+            }
         }
 
         onStopped: {
@@ -232,6 +264,11 @@ Item {
         MusicPlaylistModel {
             id: id_musicPlaylitModel
         }
+    }
+
+    MusicLyric {
+        id: id_musicLyric
+        anchors { left: id_musicPlaylistUi.right; right: parent.right; top: id_tools.bottom; bottom: id_musicBottomToolArea.top }
     }
 
     MusicBottomToolArea {
