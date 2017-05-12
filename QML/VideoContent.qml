@@ -33,6 +33,10 @@ Rectangle {
         sglSetWindowTitleVisible(visible);
     }
 
+    function showLeftToolArea() {
+        setLeftToolAreaVisible(true);
+    }
+
     function setLeftToolAreaAlwaysVisible(always) {
         if (always) {
             id_hideTimer.stop();

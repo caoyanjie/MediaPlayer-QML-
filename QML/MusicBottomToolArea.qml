@@ -208,6 +208,7 @@ Rectangle {
 
     CustomCheckBox {
         id: id_checkMusicLrc
+        dp: id_musicBottomToolArea.dp
         anchors { verticalCenter: parent.verticalCenter; right: id_musicVolume.left; margins: 30*dp }
         text: qsTr("歌词滚动")
         textColor: "white"

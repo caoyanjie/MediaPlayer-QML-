@@ -5,7 +5,6 @@ CONFIG += c++11
 
 # x86 and x64 specific macros defines
 CONFIG += debug_and_release
-#CONFIG += build_all
 contains(QT_ARCH, i386) {
     DEFINES += ARCH_X86
     CONFIG(debug, debug|release){
@@ -24,17 +23,9 @@ else{
 }
 
 # temp files dir
-OBJECTS_DIR += $$PWD/../TEMP
-RCC_DIR += $$PWD/../TEMP
-MOC_DIR += $$PWD/../TEMP
-
-SOURCES += main.cpp \
-    Application.cpp \
-    MusicPlaylistModel.cpp \
-    Network.cpp \
-    LrcViewer.cpp
-
-RESOURCES += qml.qrc
+OBJECTS_DIR += $$PWD/../Temp
+RCC_DIR += $$PWD/../Temp
+MOC_DIR += $$PWD/../Temp
 
 # icon
 RC_ICONS = Images/logo.ico
@@ -50,3 +41,11 @@ HEADERS += \
     MusicPlaylistModel.h \
     Network.h \
     LrcViewer.h
+
+SOURCES += main.cpp \
+    Application.cpp \
+    MusicPlaylistModel.cpp \
+    Network.cpp \
+    LrcViewer.cpp
+
+RESOURCES += qml.qrc

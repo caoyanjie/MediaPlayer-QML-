@@ -119,59 +119,20 @@ Rectangle {
     }
 
     // switch window border visible
-    CheckBox {
+    CustomCheckBox {
         id: id_checkbox
+        dp: id_themeSetting.dp
         anchors { left: parent.left; top: id_chooseColor.bottom; leftMargin: 25 * dp; topMargin: 5 * dp }
+        indicatorSize: 13 * dp
         checked: handleId.border.width
         font { pointSize: 12 }
-        text: qsTr("<font color=\"white\">主窗体边框线</font>")
+        textColor: "white"
+        text: qsTr("主窗体边框线")
         spacing: 3 * dp
-
-        indicator: Rectangle {
-            implicitWidth: 13 * dp
-            implicitHeight: 13 * dp
-            anchors { left: parent.left; verticalCenter: parent.verticalCenter }
-            Canvas {
-                anchors { fill: parent }
-                visible: id_checkbox.checked
-                onPaint: {
-                    var ctx = getContext("2d");
-                    ctx.strokeStyle = parent.border.color;
-                    ctx.beginPath();
-                    ctx.moveTo(3*dp, height*5/9);
-                    ctx.lineTo(width*4/9, height-3*dp);
-                    ctx.lineTo(width-3*dp, 2*dp);
-                    ctx.stroke();
-                }
-            }
-        }
 
         onCheckedChanged: {
             sglSetWindowBorderVisible(checked);
         }
-
-//        indicator: Rectangle {
-//                implicitWidth: 18 * dp
-//                implicitHeight: 18 * dp
-//                radius: 3
-//                anchors { verticalCenter: parent.verticalCenter }
-//                border.color: "white"
-//                border.width: 1
-//                color: "transparent"
-//                Rectangle {
-//                    visible: id_checkbox.checked
-//                    rotation: 40
-//                    //color: "#555"
-//                    color: "transparent"
-//                    border.color: "white"
-//                    radius: 1
-//                    anchors.margins: 4 * dp
-//                    //anchors.fill: parent
-//                    anchors { left: parent.left }
-//                    width: 40
-//                    height: 40
-//                }
-//        }
     }
 
     // choose window border color

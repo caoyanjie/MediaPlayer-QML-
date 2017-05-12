@@ -8,7 +8,7 @@ Rectangle {
     // variable need overwrite
     property var windowLogoImg: undefined
     property var windowLogoText: undefined //"logo text"
-    property color logoTextColor: undefined
+    property color logoTextColor: "white"
     property var rootWindow: undefined
     property real rootWindowDefaultWidth: 0
     property real rootWindowDefaultHeight: 0
@@ -20,9 +20,10 @@ Rectangle {
     // window state flag
     property bool isWindowMaximized: false
 
-    //
-    signal sglThemeSettingVisible(bool visible)
+    // signals
+    signal sglMousePositionChanged
     signal sglWindowTitleBtnHoverd(bool hoverd)
+    signal sglThemeSettingVisible(bool visible)
 
     // functions
     function setWindowColor(color) {
@@ -69,17 +70,17 @@ Rectangle {
         setWindowTitleVisible(false);
     }
 
+    function setWindowTitleVisible(visible) {
+        id_windowTitle.visible = visible
+        id_windowDrag.cursorShape = visible ? Qt.ArrowCursor : Qt.BlankCursor
+    }
+
     function restoreDefaultSetting() {
         setWindowColor(Qt.rgba(0, 0, 0, 0.4));
         setWindowBorderColor("white");
         setWindowBorderVisible(true);
         setWindowAlpha(0.4);
         id_loaderThemeSetting.item.setWindowAlphaSlider(0.4);
-    }
-
-    function setWindowTitleVisible(visible) {
-        id_windowTitle.visible = visible
-        id_windowDrag.cursorShape = visible ? Qt.ArrowCursor : Qt.BlankCursor
     }
 
     function showFullScreen() {
@@ -123,8 +124,8 @@ Rectangle {
     border { width: 1; color: "white" }
 
     Component.onCompleted: {
-        rootWindowDefaultWidth = rootWindow.width
-        rootWindowDefaultHeight = rootWindow.height
+        rootWindowDefaultWidth = rootWindow.width;
+        rootWindowDefaultHeight = rootWindow.height;
 
         sglWindowTitleBtnHoverd.connect(id_windowDrag.restoreArrowCursorShape);
     }
@@ -133,6 +134,7 @@ Rectangle {
     MouseArea {
         id: id_windowDrag
         anchors { fill: parent }
+        acceptedButtons: Qt.LeftButton
         hoverEnabled: true
         property point clickedPos: "0,0"
         property rect  clickedRect
@@ -160,29 +162,25 @@ Rectangle {
         }
 
         onPositionChanged: {
-            const margin = 5*dp;
+            sglMousePositionChanged();
 
-            if (id_windowContent.source == "qrc:/QML/VideoContent.qml") {
-                id_windowContent.item.setLeftToolAreaVisible(true);
-            }
-
+            const margin = 5 * dp;
             if (pressed) {
+                var delta = Qt.point(mouse.x-clickedPos.x, mouse.y-clickedPos.y)
                 if (cursorShape === Qt.ArrowCursor) {
-                    var delta = Qt.point(mouse.x-clickedPos.x, mouse.y-clickedPos.y)
-                    rootWindow.x += delta.x
-                    rootWindow.y += delta.y
+                    rootWindow.x += delta.x;
+                    rootWindow.y += delta.y;
                 }
                 else {
-                    var delta1 = Qt.point(mouse.x-clickedPos.x, mouse.y-clickedPos.y)
                     switch (mouseArea) {
                     case _BottomRightArea:
-                        rootWindow.width = clickedRect.width + delta1.x;
-                        rootWindow.height = clickedRect.height + delta1.y;
+                        rootWindow.width = clickedRect.width + delta.x;
+                        rootWindow.height = clickedRect.height + delta.y;
                         break;
                     case _TopLeftArea:
                         break;
                     case _RightArea:
-                        rootWindow.width = clickedRect.width + delta1.x;
+                        rootWindow.width = clickedRect.width + delta.x;
                         break;
                     case _LeftArea:
                         break;
@@ -277,8 +275,9 @@ Rectangle {
         readonly property real  logoSize:           25 * dp
         readonly property real  btnWidth:           40 * dp
         readonly property real  btnHeight:          22 * dp
-        readonly property real  iconLineWidth:       1 * dp
-        readonly property real  logoMargin:          5 * dp
+        readonly property real 	btnTopMargin:		5 * dp
+        readonly property real  iconLineWidth:      1 * dp
+        readonly property real  logoMargin:         5 * dp
         readonly property real  constSpacing:       15 * dp
         readonly property color iconColor:          "white"
         readonly property color iconHoveredColor:   "gray"
@@ -326,10 +325,7 @@ Rectangle {
             Text {
                 id: id_musicPlayerSwitchText
                 anchors { centerIn: parent }
-                width: parent.width / 2
-                height: width
                 color: "white"
-                //source: "/Images/music.png"
                 text: qsTr("音")
             }
 
@@ -374,10 +370,7 @@ Rectangle {
             Text {
                 id: id_videoPlayerSwitchText
                 anchors { centerIn: parent }
-                width: parent.width / 2
-                height: width
                 color: "black"
-                //source: "/Images/video.png"
                 text : qsTr("视")
             }
 
@@ -413,7 +406,7 @@ Rectangle {
         // theme setting
         ToolButton {
             id: id_windowTheme
-            anchors { top: parent.top; right: id_windowMenuMore.left; margins: 1 }
+            anchors { top: parent.top; right: id_windowMenuMore.left; margins: 1; topMargin: id_windowTitle.btnTopMargin }
             width: id_windowTitle.btnWidth
             height: id_windowTitle.btnHeight
             hoverEnabled: true
@@ -431,19 +424,19 @@ Rectangle {
                 source: "/Images/theme.png"
             }
 
-            onClicked: {
-                id_loaderThemeSetting.visible = id_loaderThemeSetting.visible ? false : true;
-            }
-
             onHoveredChanged: {
                 sglWindowTitleBtnHoverd(hovered);
+            }
+
+            onClicked: {
+                id_loaderThemeSetting.visible = id_loaderThemeSetting.visible ? false : true;
             }
         }
 
         // menu more
         ToolButton {
             id: id_windowMenuMore
-            anchors { top: parent.top; right: id_windowMini.left; margins: 1 }
+            anchors { top: parent.top; right: id_windowMini.left; margins: 1; topMargin: id_windowTitle.btnTopMargin }
             width: id_windowTitle.btnWidth
             height: id_windowTitle.btnHeight
             hoverEnabled: true
@@ -505,7 +498,7 @@ Rectangle {
         // mini window
         ToolButton {
             id: id_windowMini
-            anchors { top: parent.top; right: id_windowMax.left; margins: 1 }
+            anchors { top: parent.top; right: id_windowMax.left; margins: 1; topMargin: id_windowTitle.btnTopMargin }
             width: id_windowTitle.btnWidth
             height: id_windowTitle.btnHeight
             hoverEnabled: true
@@ -552,19 +545,19 @@ Rectangle {
                 }
             }
 
-            onClicked: {
-                rootWindow.showMinimized();
-            }
-
             onHoveredChanged: {
                 sglWindowTitleBtnHoverd(hovered);
+            }
+
+            onClicked: {
+                rootWindow.showMinimized();
             }
         }
 
         // max window
         ToolButton {
             id: id_windowMax
-            anchors { top: parent.top; right: id_windowClose.left; margins: 1 }
+            anchors { top: parent.top; right: id_windowClose.left; margins: 1; topMargin: id_windowTitle.btnTopMargin }
             width: id_windowTitle.btnWidth
             height: id_windowTitle.btnHeight
             hoverEnabled: true
@@ -641,6 +634,10 @@ Rectangle {
                 }
             }
 
+            onHoveredChanged: {
+                sglWindowTitleBtnHoverd(hovered);
+            }
+
             onClicked: {
                 if (id_windowFrame.isWindowMaximized) {
                     rootWindow.showNormal();
@@ -651,16 +648,12 @@ Rectangle {
                     id_windowFrame.isWindowMaximized = true;
                 }
             }
-
-            onHoveredChanged: {
-                sglWindowTitleBtnHoverd(hovered);
-            }
         }
 
         // close window
         ToolButton {
             id: id_windowClose
-            anchors { top: parent.top; right: parent.right; margins: 1 }
+            anchors { top: parent.top; right: parent.right; margins: 1; topMargin: id_windowTitle.btnTopMargin }
             width: id_windowTitle.btnWidth
             height: id_windowTitle.btnHeight
             hoverEnabled: true
@@ -711,12 +704,12 @@ Rectangle {
                 }
             }
 
-            onClicked: {
-                Qt.quit();
-            }
-
             onHoveredChanged: {
                 sglWindowTitleBtnHoverd(hovered);
+            }
+
+            onClicked: {
+                Qt.quit();
             }
         }
 
@@ -803,9 +796,9 @@ Rectangle {
             id_windowContent.item.sglVideoStopped.disconnect(restoreWindow);
             sglThemeSettingVisible.disconnect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
             sglWindowTitleBtnHoverd.disconnect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
+            sglMousePositionChanged.disconnect(id_windowContent.item.showLeftToolArea);
 
             source = "MusicContent.qml";
-
         }
 
         function switchToVideoPlayer() {
@@ -819,6 +812,7 @@ Rectangle {
             id_windowContent.item.sglVideoStopped.connect(restoreWindow);
             sglThemeSettingVisible.connect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
             sglWindowTitleBtnHoverd.connect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
+            sglMousePositionChanged.connect(id_windowContent.item.showLeftToolArea);
         }
 
         onLoaded: {

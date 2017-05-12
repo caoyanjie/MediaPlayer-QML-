@@ -13,7 +13,6 @@ Window {
         id: id_windowFrame
         windowLogoImg: "/Images/logo.png"
         windowLogoText: qsTr("Media Player")
-        logoTextColor: "white"
         rootWindow: id_rootWindow
     }
 }

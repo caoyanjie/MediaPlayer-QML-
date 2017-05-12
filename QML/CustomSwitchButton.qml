@@ -1,18 +1,17 @@
 import QtQuick 2.0
-import QtQuick.Window 2.0
 import QtQuick.Controls 2.0
 
 Item {
     id: id_customSwitchButton
-
     property real   dp: 1
     property string leftText: qsTr("On")
     property string rightText: qsTr("Off")
-    property color  backgroundColor: Qt.rgba(1, 0, 0, 0.5)
-    property color  btnColor: Qt.rgba(0, 0, 1, 0.5)
+    property color  backgroundColor: Qt.rgba(0, 0.5, 0.8, 0.4)
+    property color  btnColor: Qt.rgba(0, 0.5, 0.8, 0.6)
     property color  arrowColor: btnColor
     property real   btnRadius: height / 2
     property color  textColor: "white"
+    property color  inactiveTextColor: Qt.rgba(1, 1, 1, 0.6)
     property int    active: leftActive
     property bool   bottomArrow: false
     property bool   btnIcon: false
@@ -47,6 +46,11 @@ Item {
     width: 100 * dp
     height: 18 * dp
 
+    Component.onCompleted: {
+        id_activeSliderText.text = id_customSwitchButton.leftText;
+        id_inactiveSliderText.text = id_customSwitchButton.rightText;
+    }
+
     Rectangle {
         anchors { fill: parent }
         radius: btnRadius
@@ -54,9 +58,9 @@ Item {
 
         ToolButton {
             id: id_activeSlider
-            anchors { top: parent.top; bottom: parent.bottom }
-            state: "onLeft"
-            
+            anchors { left: parent.left; right: parent.horizontalCenter; top: parent.top; bottom: parent.bottom; margins: 1 }
+            //state: "onLeft"
+
             background: Rectangle {
                 anchors { fill: parent }
                 radius: btnRadius
@@ -65,15 +69,14 @@ Item {
 
             Text {
                 id: id_activeSliderText
-                //anchors { centerIn: parent }
                 anchors { fill: parent }
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: textColor
-                text: id_customSwitchButton.leftText
                 elide: Text.ElideRight
+                color: textColor
             }
 
+            // bottom arrow
             Loader {
                 anchors { horizontalCenter: parent.horizontalCenter; top: parent.bottom }
                 width: parent.height/2
@@ -86,6 +89,7 @@ Item {
                 height: parent.height/2
                 width: height
                 hoverEnabled: true
+                visible: btnIcon
 
                 ToolTip {
                     text: parent.parent.state === "onLeft" ? qsTr("清空历史") : qsTr("添加排队视频")
@@ -119,7 +123,6 @@ Item {
                     }
                 }
             }
-
 
             Component {
                 id: com_bottomArrow
@@ -217,8 +220,8 @@ Item {
 
         ToolButton {
             id: id_inactiveSlider
-            anchors { top: parent.top; bottom: parent.bottom }
-            state: "onRight"
+            anchors { left: parent.horizontalCenter; right: parent.right; top: parent.top; bottom: parent.bottom }
+            //state: "onRight"
 
             background: Rectangle {
                 anchors { fill: parent }
@@ -228,13 +231,11 @@ Item {
 
             Text {
                 id: id_inactiveSliderText
-                //anchors { centerIn: parent }
                 anchors { fill: parent }
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: textColor
-                text: id_customSwitchButton.rightText
                 elide: Text.ElideRight
+                color: inactiveTextColor
             }
 
             states: [

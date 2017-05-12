@@ -14,9 +14,9 @@ Item {
 
     function setCurrentLrc(currentLrc, currentLrcDuration) {
         id_maskTiemr.stop();
-        id_previousLrc.text += currentLrc + "\n";
+        id_previousLrc.text += (id_currentLrc.text == "正在下载歌词......" ? "" : id_currentLrc.text + "\n");
         id_currentLrc.text = currentLrc;
-        id_maskTiemr.interval = currentLrcDuration * maskOneStepWidth / id_currentLrcMask.contentWidth
+        id_maskTiemr.interval = currentLrcDuration * maskOneStepWidth / id_currentLrcMask.contentWidth;
         id_maskTiemr.start();
     }
 

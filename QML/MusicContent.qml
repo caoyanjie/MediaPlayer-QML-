@@ -5,7 +5,7 @@ import QtQuick.controls.Private 1.0
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Dialogs 1.2
 
-import QtMultimedia 5.7
+import QtAV 1.7
 
 import QtCPlusPlus.MusicPlaylistModel 1.0
 import QtCPlusPlus.Network 1.0
@@ -36,7 +36,7 @@ Item {
         id: id_lrcViewer
     }
 
-    MediaPlayer {
+    AVPlayer {
         id: id_musicPlayer
         autoPlay: true
 
@@ -68,10 +68,6 @@ Item {
         }
     }
 
-    Playlist {
-        id: id_musicPlaylist
-    }
-
     // 占位
     Item {
         id: id_windowTitle
@@ -91,7 +87,7 @@ Item {
     Rectangle {
         id: id_musicPlaylistUi
         anchors { left: parent.left; top: id_tools.bottom }
-        width: parent.width / 4
+        width: parent.width * 2 / 7
         height: parent.height - id_windowTitle.height - id_tools.height - id_musicBottomToolArea.height
         color: "transparent"
         border { color: "white"; width: 1 }
@@ -106,7 +102,7 @@ Item {
             // music playlist title text
             Text {
                 id: id_musicPlaylistTitleText
-                anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 10*dp; rightMargin: 20*dp }
+                anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 10*dp }
                 color: "white"
                 text: qsTr("播放列表")
             }
@@ -114,8 +110,9 @@ Item {
             // music add button
             CustomComboBox {
                 id: id_addMusic
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter; margins: 20*dp }
-                width: 75 * dp
+                dp: id_musicContent.dp
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                width: 70 * dp
                 height: 20 * dp
                 model: ["添加音乐", "添加目录"]
                 property bool inited: false
@@ -148,7 +145,7 @@ Item {
             // mysic create list button
             Rectangle {
                 id: id_createMusicPlaylist
-                anchors { right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 20*dp; rightMargin: 10*dp }
+                anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 10*dp }
                 width: id_addMusic.width
                 height: id_addMusic.height
                 color: Qt.rgba(0, 0, 0, 0.5)
