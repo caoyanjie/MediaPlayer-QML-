@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick av avwidgets
+QT += qml quick av avwidgets xml
 CONFIG += c++11
 
 # x86 and x64 specific macros defines
@@ -40,12 +40,14 @@ HEADERS += \
     Application.h \
     MusicPlaylistModel.h \
     Network.h \
-    LrcViewer.h
+    LrcViewer.h \
+    XmlProcess.h
 
 SOURCES += main.cpp \
     Application.cpp \
     MusicPlaylistModel.cpp \
     Network.cpp \
-    LrcViewer.cpp
+    LrcViewer.cpp \
+    XmlProcess.cpp
 
 RESOURCES += qml.qrc

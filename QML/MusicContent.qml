@@ -10,6 +10,7 @@ import QtAV 1.7
 import QtCPlusPlus.MusicPlaylistModel 1.0
 import QtCPlusPlus.Network 1.0
 import QtCPlusPlus.LrcViewer 1.0
+import QtCPlusPlus.XmlProcess 1.0
 
 Item {
     id: id_musicContent
@@ -25,10 +26,29 @@ Item {
         return url.toString().substring(8);
     }
 
+    function loadMusicFromMusicListName(musicListName) {
+        var musicList = id_xmlProcess.getElementChildrenText("MusicList", "url");
+        for (var i=0; i<musicList.length; ++i) {
+            id_musicPlaylitModel.addMusic(musicListName, musicList[i]);
+        }
+        id_musicList.expand(id_musicPlaylitModel.getMusicListIndex(musicListName));
+    }
+
+    function writeAddingMusicToConfigFile(filename) {
+        id_xmlProcess.writeMusicToConfigFile(filename);
+    }
+
     Network {
         id: id_network
         onLrcDownloadFinished: {
             id_lrcViewer.resolveLrc(getFileFullPathFromFileUrl(id_musicPlayer.source));
+        }
+    }
+
+    XmlProcess {
+        id: id_xmlProcess
+        Component.onCompleted: {
+            loadMusicFromMusicListName("默认列表");
         }
     }
 
@@ -136,6 +156,7 @@ Item {
                     onAccepted: {
                         for (var i in fileUrls) {
                             id_musicPlaylitModel.addMusic("默认列表", fileUrls[i].toString());
+                            writeAddingMusicToConfigFile(fileUrls[i].toString());
                         }
                         id_musicList.expand(id_musicPlaylitModel.getMusicListIndex("默认列表"));
                     }

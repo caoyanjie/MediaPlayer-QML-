@@ -6,6 +6,7 @@
 #include "MusicPlaylistModel.h"
 #include "Network.h"
 #include "LrcViewer.h"
+#include "XmlProcess.h"
 
 #ifdef Q_OS_WIN
 #include <Windows.h>
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<MusicPlaylistModel>("QtCPlusPlus.MusicPlaylistModel", 1, 0, "MusicPlaylistModel");
     qmlRegisterType<NetWork>("QtCPlusPlus.Network", 1, 0, "Network");
     qmlRegisterType<LrcViewer>("QtCPlusPlus.LrcViewer", 1, 0, "LrcViewer");
+    qmlRegisterType<XmlProcess>("QtCPlusPlus.XmlProcess", 1, 0, "XmlProcess");
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/QML/main.qml")));
