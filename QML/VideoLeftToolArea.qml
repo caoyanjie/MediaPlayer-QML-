@@ -84,8 +84,12 @@ Rectangle {
 
         }
 
+        onSglMouseEntered: {
+            id_videoLeftToolArea.sglMouseEntered();
+        }
+
         onSglButtonIconHovered: {
-            sglMouseEntered();
+            id_videoLeftToolArea.sglMouseEntered();
         }
     }
 

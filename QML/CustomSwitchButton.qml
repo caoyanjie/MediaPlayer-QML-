@@ -25,6 +25,7 @@ Item {
     signal sglRightBtnActived()
     signal sglLeftButtonIconClicked()
     signal sglRightButtonIconClicked()
+    signal sglMouseEntered()
     signal sglButtonIconHovered()
 
     // functions
@@ -59,6 +60,7 @@ Item {
         ToolButton {
             id: id_activeSlider
             anchors { left: parent.left; right: parent.horizontalCenter; top: parent.top; bottom: parent.bottom; margins: 1 }
+            hoverEnabled: true
             //state: "onLeft"
 
             background: Rectangle {
@@ -213,6 +215,12 @@ Item {
                 }
             }
 
+            onHoveredChanged: {
+                if (hovered) {
+                    sglMouseEntered();
+                }
+            }
+
             onClicked: {
                 switchChanged();
             }
@@ -221,6 +229,7 @@ Item {
         ToolButton {
             id: id_inactiveSlider
             anchors { left: parent.horizontalCenter; right: parent.right; top: parent.top; bottom: parent.bottom }
+            hoverEnabled: true
             //state: "onRight"
 
             background: Rectangle {
@@ -262,6 +271,12 @@ Item {
                     }
                 }
             ]
+
+            onHoveredChanged: {
+                if (hovered) {
+                    sglMouseEntered();
+                }
+            }
 
             onClicked: {
                 switchChanged();
