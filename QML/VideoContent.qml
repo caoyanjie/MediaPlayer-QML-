@@ -84,6 +84,8 @@ Rectangle {
             id_videoOutput.visible = false;
             id_bottomToolArea.videoPlayingEnd();
             sglVideoStopped();
+
+            id_leftToolArea.playNextVideo(source.toString());
         }
 
         onPlaying: {

@@ -12,7 +12,7 @@ Rectangle {
     signal sglItemDoubleClicked(url fileUrl)
 
     // 若播放列表中已存在则返回index，否则返回-1
-    function isPlaylistExists(fileUrl) {
+    function isPlaylistExists(fileUrl/*type: string*/) {
         for (var index = 0; index < id_playlistModel.count; ++index) {
             var existsFilePath = id_playlistModel.get(index)["mediaName"];
             if (fileUrl === existsFilePath) {
@@ -23,7 +23,7 @@ Rectangle {
     }
 
     // 若历史播放列表中已存在则返回index，否则返回-1
-    function isPlaylistHistoryExists(fileUrl) {
+    function isPlaylistHistoryExists(fileUrl/*type: string*/) {
         for (var index = 0; index < id_playlistHistoryModel.count; ++index) {
             var existsFilePath = id_playlistHistoryModel.get(index)["mediaName"];
             if (fileUrl === existsFilePath) {
@@ -33,8 +33,19 @@ Rectangle {
         return -1;
     }
 
+    // 播放 播放列表中的下一个视频
+    function playNextVideo(currentFileUrl/*type: string*/) {
+        for (var index = 0; index < id_playlistModel.count; ++index) {
+            var existsFilePath = id_playlistModel.get(index)["mediaName"];
+            if (currentFileUrl === existsFilePath && index+1 < id_playlistModel.count) {
+                sglItemDoubleClicked(id_playlistModel.get(index+1)["mediaName"]);
+                return;
+            }
+        }
+    }
+
     // 向播放队列中添加视频
-    function addMediaToPlaylist(fileUrl) {
+    function addMediaToPlaylist(fileUrl/*type: string*/) {
         var newFilePath = fileUrl.toString().replace(/\\/g, "/");
         var index = isPlaylistExists(newFilePath);
         if (index > -1) {
@@ -46,7 +57,7 @@ Rectangle {
         }
     }
 
-    function addMediaToPlaylistHistory(fileUrl) {
+    function addMediaToPlaylistHistory(fileUrl/*type: string*/) {
         var newFilePath = fileUrl.toString().replace(/\\/g, "/");
         var index = isPlaylistHistoryExists(newFilePath);
         if (index > -1) {
@@ -57,7 +68,7 @@ Rectangle {
         }
     }
 
-    function updatePlaylist(fileUrl) {
+    function updatePlaylist(fileUrl/*type: string*/) {
         // playlist model
         addMediaToPlaylist(fileUrl);
 
