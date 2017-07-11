@@ -49,16 +49,15 @@ Rectangle {
     function playMedia(fileUrl) {
         if (fileUrl === id_mediaPlayer.source) {
             id_mediaPlayer.seek(0);
+            id_mediaPlayer.play();
         }
         else {
             id_mediaPlayer.source = fileUrl;
         }
-        id_mediaPlayer.play();
         id_leftToolArea.updatePlaylist(fileUrl);
     }
 
     Component.onCompleted: {
-        id_leftToolArea.sglItemDoubleClicked.connect(playMedia);
         id_bottomToolArea.sglSwitchFullScreen.connect(sglSwitchFullScreen);
         id_bottomToolArea.sglShowNormalScreen.connect(sglShowNormalScreen);
 
@@ -84,7 +83,6 @@ Rectangle {
         onStopped: {
             id_videoOutput.visible = false;
             id_bottomToolArea.videoPlayingEnd();
-            source = "";
             sglVideoStopped();
         }
 
@@ -231,6 +229,10 @@ Rectangle {
 
         onSglMouseLeaved: {
             setLeftToolAreaAlwaysVisible(false);
+        }
+
+        onSglItemDoubleClicked: {
+            playMedia(fileUrl);
         }
     }
 

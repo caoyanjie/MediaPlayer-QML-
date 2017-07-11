@@ -47,11 +47,6 @@ Item {
     width: 100 * dp
     height: 18 * dp
 
-    Component.onCompleted: {
-        id_activeSliderText.text = id_customSwitchButton.leftText;
-        id_inactiveSliderText.text = id_customSwitchButton.rightText;
-    }
-
     Rectangle {
         anchors { fill: parent }
         radius: btnRadius
@@ -59,9 +54,9 @@ Item {
 
         ToolButton {
             id: id_activeSlider
-            anchors { left: parent.left; right: parent.horizontalCenter; top: parent.top; bottom: parent.bottom; margins: 1 }
+            anchors { top: parent.top; bottom: parent.bottom; margins: 1 }
             hoverEnabled: true
-            //state: "onLeft"
+            state: "onLeft"
 
             background: Rectangle {
                 anchors { fill: parent }
@@ -228,9 +223,9 @@ Item {
 
         ToolButton {
             id: id_inactiveSlider
-            anchors { left: parent.horizontalCenter; right: parent.right; top: parent.top; bottom: parent.bottom }
+            anchors { top: parent.top; bottom: parent.bottom }
             hoverEnabled: true
-            //state: "onRight"
+            state: "onRight"
 
             background: Rectangle {
                 anchors { fill: parent }
