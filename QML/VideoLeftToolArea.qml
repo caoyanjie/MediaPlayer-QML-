@@ -33,6 +33,11 @@ Rectangle {
         return -1;
     }
 
+    // 是否是播放列表中的最后一个视频
+    function isLastVideo(fileUrl/*type: string*/) {
+        return id_playlistModel.get(id_playlistModel.count-1)["mediaName"] === fileUrl;
+    }
+
     // 播放 播放列表中的下一个视频
     function playNextVideo(currentFileUrl/*type: string*/) {
         for (var index = 0; index < id_playlistModel.count; ++index) {

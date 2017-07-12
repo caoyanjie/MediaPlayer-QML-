@@ -56,6 +56,10 @@ Rectangle {
         id_videoProgress.to = 0;
     }
 
+    function isWindowAutoResize() {
+        return id_windowAutoResize.checked;
+    }
+
     color: Qt.rgba(0, 0, 0, 0.55)
 
     Component.onCompleted: {
@@ -268,6 +272,14 @@ Rectangle {
                 ctx.stroke();
             }
         }
+    }
+
+    CustomCheckBox {
+        id: id_windowAutoResize
+        anchors { left: id_videoVolume.right; top: id_videoProgress.bottom; topMargin: btnTopMargin/4; leftMargin: btnSpacing }
+        textColor: "white"
+        text: qsTr("自动调整窗口大小")
+        checked: true
     }
 
     Text {

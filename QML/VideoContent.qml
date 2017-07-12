@@ -48,8 +48,7 @@ Rectangle {
 
     function playMedia(fileUrl) {
         if (fileUrl === id_mediaPlayer.source) {
-            id_mediaPlayer.seek(0);
-            id_mediaPlayer.play();
+            id_mediaPlayer.seek(100);		// 不能 seek(0)，不会暂停到 0 处
         }
         else {
             id_mediaPlayer.source = fileUrl;
@@ -78,14 +77,19 @@ Rectangle {
 
         onPositionChanged: {
             id_bottomToolArea.setVideoProgress(position);
+            if (duration-position < 500) {
+                if (id_leftToolArea.isLastVideo(source.toString())) {
+                    sglVideoStopped();
+                }
+                else {
+                    id_leftToolArea.playNextVideo(source.toString());
+                }
+            }
         }
 
         onStopped: {
             id_videoOutput.visible = false;
             id_bottomToolArea.videoPlayingEnd();
-            sglVideoStopped();
-
-            id_leftToolArea.playNextVideo(source.toString());
         }
 
         onPlaying: {
@@ -106,29 +110,31 @@ Rectangle {
             }
 
             // resize window
-            var desWidth = sourceRect.width * id_windowFrame.dp * 0.8;
-            var desHeight = sourceRect.height * id_windowFrame.dp * 0.8;
+            if (id_bottomToolArea.isWindowAutoResize()) {
+                var desWidth = sourceRect.width * id_windowFrame.dp * 0.8;
+                var desHeight = sourceRect.height * id_windowFrame.dp * 0.8;
 
-            if (desWidth <= Screen.width && desHeight <= Screen.height) {
-                id_rootWindow.width = desWidth;
-                id_rootWindow.height = desHeight;
-            }
-            else {
-                var ratio = sourceRect.width / sourceRect.height;
-                if (ratio > 1) {
-                    id_rootWindow.width = desWidth > Screen.width ? Screen.width : desWidth;
-                    id_rootWindow.height = id_rootWindow.width / ratio;
-
+                if (desWidth <= Screen.width && desHeight <= Screen.height) {
+                    id_rootWindow.width = desWidth;
+                    id_rootWindow.height = desHeight;
                 }
                 else {
-                    id_rootWindow.height = desHeight > Screen.height ? Screen.height : desHeight;
-                    id_rootWindow.width = id_rootWindow.height * ratio;
-                }
-            }
+                    var ratio = sourceRect.width / sourceRect.height;
+                    if (ratio > 1) {
+                        id_rootWindow.width = desWidth > Screen.width ? Screen.width : desWidth;
+                        id_rootWindow.height = id_rootWindow.width / ratio;
 
-            // move window
-            id_rootWindow.x = (Screen.width-id_rootWindow.width)/2;
-            id_rootWindow.y = (Screen.height-id_rootWindow.height)/2;
+                    }
+                    else {
+                        id_rootWindow.height = desHeight > Screen.height ? Screen.height : desHeight;
+                        id_rootWindow.width = id_rootWindow.height * ratio;
+                    }
+                }
+
+                // move window
+                id_rootWindow.x = (Screen.width-id_rootWindow.width)/2;
+                id_rootWindow.y = (Screen.height-id_rootWindow.height)/2;
+            }
 
             // set video total time
             id_bottomToolArea.setVideoTotalTime(source.metaData.duration);
@@ -287,6 +293,7 @@ Rectangle {
 
         onSglStopVideo: {
             id_mediaPlayer.stop();
+            id_windowContent.sglVideoStopped();
         }
 
         onSglPreviousVideo: {
