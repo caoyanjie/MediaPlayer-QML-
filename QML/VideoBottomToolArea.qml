@@ -276,7 +276,12 @@ Rectangle {
 
     CustomCheckBox {
         id: id_windowAutoResize
+<<<<<<< HEAD
         anchors { left: id_videoVolume.right; top: id_videoProgress.bottom; topMargin: btnTopMargin/4; leftMargin: btnSpacing }
+=======
+        dp: id_videoBottomToolArea.dp
+        anchors { verticalCenter: id_videoTotalTime.verticalCenter; right: id_videoCurrentTime.left; rightMargin: 20*dp }
+>>>>>>> dev
         textColor: "white"
         text: qsTr("自动调整窗口大小")
         checked: true
