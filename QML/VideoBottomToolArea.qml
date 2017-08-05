@@ -15,6 +15,9 @@ Rectangle {
 
     signal sglMouseEntered()
     signal sglMouseLeaved()
+    signal sglMouseEnterSlider()
+    signal sglMouseLeaveSlider()
+    signal sglMouseXOnSliderChanged(real x, real videoPosition)
     signal sglStopVideo()
     signal sglPlayPauseVideo()
     signal sglPreviousVideo()
@@ -63,7 +66,6 @@ Rectangle {
     color: Qt.rgba(0, 0, 0, 0.55)
 
     Component.onCompleted: {
-        id_videoProgress.sglMouseEntered.connect(sglMouseEntered);
         id_stopVideo.clicked.connect(sglStopVideo);
         id_previousVideo.clicked.connect(sglPreviousVideo);
         id_playPauseVideo.clicked.connect(sglPlayPauseVideo);
@@ -124,6 +126,19 @@ Rectangle {
             if (pressed && (position*to).toFixed() != value) {     // 不能用 !==
                 sglSetVideoPosition(parseInt(position*to));
             }
+        }
+
+        onSglMouseEntered: {
+            id_videoBottomToolArea.sglMouseEntered();
+            sglMouseEnterSlider();
+        }
+
+        onSglMouseLeaved: {
+            sglMouseLeaveSlider();
+        }
+
+        onSglMouseXChanged: {
+            id_videoBottomToolArea.sglMouseXOnSliderChanged(x, value);
         }
 
         onSglValueTo: {

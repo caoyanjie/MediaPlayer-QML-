@@ -10,6 +10,8 @@ Slider {
     property color backColor: "white"
 
     signal sglMouseEntered()
+    signal sglMouseLeaved()
+    signal sglMouseXChanged(real x, real value)
     signal sglValueTo(real value)
 
     hoverEnabled: true
@@ -37,15 +39,18 @@ Slider {
             hoverEnabled: true
             cursorShape: hovered ? Qt.PointingHandCursor : Qt.ArrowCursor
 
-            onHoveredChanged: {
-                if (hovered) {
-                    sglMouseEntered();
-                }
+            onEntered: {
+                sglMouseEntered();
             }
-//            onMouseXChanged: {
-//                sglMouseEntered();
-//                mouse.accepted = false;
-//            }
+
+            onExited: {
+                sglMouseLeaved();
+            }
+
+            onMouseXChanged: {
+                sglMouseXChanged(mouse.x, mouse.x / parent.width * to);
+                mouse.accepted = false;
+            }
 
             onPressed: {
                 sglValueTo(mouse.x / parent.width * to);

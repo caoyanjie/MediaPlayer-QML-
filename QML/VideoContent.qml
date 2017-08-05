@@ -54,6 +54,7 @@ Rectangle {
             id_mediaPlayer.source = fileUrl;
         }
         id_leftToolArea.updatePlaylist(fileUrl);
+        id_bottomToolArea.forceActiveFocus();
     }
 
     Component.onCompleted: {
@@ -151,6 +152,16 @@ Rectangle {
             //console.log(id_mediaPlayer.metaData.category);
         }
     }
+
+    VideoPreview {
+        id: id_videoPreview
+        anchors { bottom: id_bottomToolArea.top }
+        width: 600
+        height: 400
+        file: id_mediaPlayer.source
+        visible: false
+    }
+
 
     Image {
         id: id_videoOpenerImg
@@ -252,6 +263,7 @@ Rectangle {
         x: 1
         state: "hideBottomToolArea"
         focus: true
+        property real lastTime: 0
 
         states: [
             State {
@@ -283,6 +295,25 @@ Rectangle {
 
         onSglMouseLeaved: {
             setLeftToolAreaAlwaysVisible(false);
+        }
+
+        onSglMouseEnterSlider: {
+            id_videoPreview.visible = true;
+        }
+
+        onSglMouseLeaveSlider: {
+            id_videoPreview.visible = false;
+        }
+
+        onSglMouseXOnSliderChanged: {
+            id_videoPreview.x = x - id_videoPreview.width / 2;
+            var date = new Date();
+            var currentTime = date.getTime();
+            if (currentTime - lastTime < 300) {
+                return;
+            }
+            id_videoPreview.timestamp = videoPosition;
+            lastTime = currentTime;
         }
 
         onSglSetVideoPosition: {
