@@ -97,6 +97,29 @@ Rectangle {
             id_videoOutput.visible = true;
             sglVideoPlaying();
         }
+
+        onError: {
+            switch (error) {
+            case AVPlayer.NoError:
+                id_errText.text = ''
+                break;
+            case AVPlayer.ResourceError:
+                console.log('ResourceError');
+                break;
+            case AVPlayer.FormatError:
+                id_errText.text = '视频格式错误，无法渲染！@_@!';
+                break;
+            case AVPlayer.NetworkError:
+                console.log('网络错误！');
+                break;
+            case AVPlayer.AccessDenied:
+                console.log('AccessDenied');
+                break;
+            case AVPlayer.ServiceMissing:
+                console.log('ServiceMissing');
+                break;
+            }
+        }
     }
 
     VideoOutput {
@@ -162,6 +185,21 @@ Rectangle {
         visible: false
     }
 
+    Text {
+        id: id_errText
+        anchors { horizontalCenter: parent.horizontalCenter; bottom: id_videoOpenerImg.top }
+        font { pointSize: 13 }
+        color: 'red'
+
+        Rectangle {
+            anchors { centerIn: parent }
+            width: parent.width ? parent.width + 20*dp : 0
+            height: parent.height ? parent.height + 8*dp : 0
+            color: 'transparent'
+            radius: height / 2
+            border { color: Qt.rgba(1, 0, 0, 0.5); width: 2*dp }
+        }
+    }
 
     Image {
         id: id_videoOpenerImg
