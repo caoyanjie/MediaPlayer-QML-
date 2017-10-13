@@ -207,7 +207,7 @@ Rectangle {
         width: 170 * dp
         height: width
         source: "/Images/videoOpener.png"
-        visible: !id_videoOutput.visible // !id_mediaPlayer.playbackState || id_mediaPlayer.playbackState === id_mediaPlayer.StoppedState
+        visible: !id_videoOutput.visible // !id_mediaPlayer.playbackState || id_mediaPlayer.playbackState === AVPlayer.StoppedState
 
         Button {
             id: id_playlistChoose
@@ -336,7 +336,7 @@ Rectangle {
         }
 
         onSglMouseEnterSlider: {
-            id_videoPreview.visible = true;
+            //id_videoPreview.visible = true;
         }
 
         onSglMouseLeaveSlider: {
@@ -344,6 +344,10 @@ Rectangle {
         }
 
         onSglMouseXOnSliderChanged: {
+            if (AVPlayer.PlayingState != id_mediaPlayer.playbackState) {
+                return;
+            }
+
             var leftPos = x - id_videoPreview.width / 2;
             if (leftPos < 0) {
                 leftPos = 0;
@@ -360,6 +364,8 @@ Rectangle {
             }
             id_videoPreview.timestamp = videoPosition;
             lastTime = currentTime;
+
+            id_videoPreview.visible = true;
         }
 
         onSglSetVideoPosition: {
