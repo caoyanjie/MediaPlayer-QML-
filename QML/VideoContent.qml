@@ -179,8 +179,8 @@ Rectangle {
     VideoPreview {
         id: id_videoPreview
         anchors { bottom: id_bottomToolArea.top }
-        width: 600
-        height: 400
+        width: 256 * dp
+        height: 192 * dp
         file: id_mediaPlayer.source
         visible: false
     }
@@ -344,7 +344,15 @@ Rectangle {
         }
 
         onSglMouseXOnSliderChanged: {
-            id_videoPreview.x = x - id_videoPreview.width / 2;
+            var leftPos = x - id_videoPreview.width / 2;
+            if (leftPos < 0) {
+                leftPos = 0;
+            }
+            else if (leftPos + id_videoPreview.width > id_videoOutput.width) {
+                leftPos = id_videoOutput - id_videoPreview.width;
+            }
+
+            id_videoPreview.x = leftPos;
             var date = new Date();
             var currentTime = date.getTime();
             if (currentTime - lastTime < 300) {
