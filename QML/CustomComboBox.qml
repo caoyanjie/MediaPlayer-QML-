@@ -48,7 +48,7 @@ ComboBox {
         text: parent.currentText
         font: parent.font
         verticalAlignment: Qt.AlignVCenter
-        anchors { left: parent.left; verticalCenter: parent.verticalCenter; margins: 3 * dp }
+        anchors { left: parent.left; /*verticalCenter: parent.verticalCenter;*/ margins: 3 * dp }	// verticalCenter: parent.verticalCenter会提示循环绑定
     }
 
     delegate: ItemDelegate {
