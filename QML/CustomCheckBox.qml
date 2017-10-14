@@ -9,8 +9,10 @@ CheckBox {
 
     indicator: Rectangle {
         id: id_indicator
-        implicitWidth: indicatorSize
-        implicitHeight: implicitWidth
+        //implicitWidth: indicatorSize	// 此处没有完全理解implicitWidth和width的区别，如果设置implicitWidth的话会提示循环绑定
+        //implicitHeight: implicitWidth
+        width: indicatorSize
+        height: width
         anchors { left: parent.left; verticalCenter: parent.verticalCenter; margins: 3 * dp }
 
         Canvas {
