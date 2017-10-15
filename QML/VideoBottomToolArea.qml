@@ -193,7 +193,11 @@ Rectangle {
         anchors { top: id_videoProgress.bottom; right: id_previousVideo.left; topMargin: btnTopMargin; rightMargin: btnSpacing }
         width: btnSize
         height: btnSize
+
         background: Canvas {
+            //anchors { centerIn: parent }
+            //width: parent.width / 2
+            //height: parent.height / 2
             onPaint: {
                 var ctx = getContext("2d");
                 ctx.fillStyle = btnColor;
@@ -203,6 +207,17 @@ Rectangle {
                 ctx.stroke();
             }
         }
+
+        //background: Loader {
+        //    anchors { fill: parent }
+        //    sourceComponent: com_btnBg
+        //    property bool hovered: parent.hovered
+        //}
+
+        onHoveredChanged: {
+            sglMouseEntered();
+        }
+
         onClicked: {
             connectsglStopVideo();
         }
@@ -234,6 +249,11 @@ Rectangle {
                 ctx.fill();
             }
         }
+
+        onHoveredChanged: {
+            sglMouseEntered();
+        }
+
         onClicked: {
             sglPreviousVideo();
         }
@@ -273,6 +293,11 @@ Rectangle {
                 ctx.stroke();
             }
         }
+
+        onHoveredChanged: {
+            sglMouseEntered();
+        }
+
         onClicked: {
             sglPlayPauseVideo();
         }
@@ -307,6 +332,11 @@ Rectangle {
                 ctx.stroke();
             }
         }
+
+        onHoveredChanged: {
+            sglMouseEntered();
+        }
+
         onClicked: {
             sglNextVideo();
         }
@@ -340,6 +370,11 @@ Rectangle {
                 ctx.stroke();
             }
         }
+
+        onHoveredChanged: {
+            sglMouseEntered();
+        }
+
     }
 
     CustomCheckBox {
@@ -350,6 +385,10 @@ Rectangle {
         textColor: "white"
         text: qsTr("自动调整窗口大小")
         checked: true
+
+        onHoveredChanged: {
+            sglMouseEntered();
+        }
     }
 
     Text {
@@ -367,6 +406,14 @@ Rectangle {
         font { pointSize: 10 }
         text: "/00:00:00"
     }
+
+    //Component {
+    //    id: com_btnBg
+    //    Rectangle {
+    //        anchors { fill: parent }
+    //        color: parent.parent.hovered ? Qt.rgba(0, 0, 0, 0.6) : "transparent"
+    //    }
+    //}
 
 //    ToolButton {
 //        id: id_windowMenuMore
