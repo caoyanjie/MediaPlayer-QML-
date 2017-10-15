@@ -76,6 +76,22 @@ Rectangle {
         autoPlay: true
         volume: 0.5
 
+        onPlaying: {
+            id_videoOutput.visible = true;
+            sglVideoPlaying();
+            id_bottomToolArea.setVideoPlayingState();
+        }
+
+        onPaused: {
+            id_bottomToolArea.setVideoPauseState();
+        }
+
+        onStopped: {
+            id_videoOutput.visible = false;
+            id_bottomToolArea.videoPlayingEnd();
+            id_bottomToolArea.setVideoPauseState();
+        }
+
         onPositionChanged: {
             id_bottomToolArea.setVideoProgress(position);
             if (duration-position < 500) {
@@ -86,16 +102,6 @@ Rectangle {
                     id_leftToolArea.playNextVideo(source.toString());
                 }
             }
-        }
-
-        onStopped: {
-            id_videoOutput.visible = false;
-            id_bottomToolArea.videoPlayingEnd();
-        }
-
-        onPlaying: {
-            id_videoOutput.visible = true;
-            sglVideoPlaying();
         }
 
         onError: {

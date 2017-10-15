@@ -63,15 +63,17 @@ Rectangle {
         return id_windowAutoResize.checked;
     }
 
-    color: Qt.rgba(0, 0, 0, 0.55)
-
-    Component.onCompleted: {
-        id_stopVideo.clicked.connect(sglStopVideo);
-        id_previousVideo.clicked.connect(sglPreviousVideo);
-        id_playPauseVideo.clicked.connect(sglPlayPauseVideo);
-        id_nextVideo.clicked.connect(sglNextVideo);
-        //id_videoVolume.clicked.connect(sglVideoVolumnChanged)
+    function setVideoPlayingState() {
+        id_playPauseVideo.btnState = "playing";
+        id_playPauseVideo.background.requestPaint();
     }
+
+    function setVideoPauseState() {
+        id_playPauseVideo.btnState = "pause";
+        id_playPauseVideo.background.requestPaint();
+    }
+
+    color: Qt.rgba(0, 0, 0, 0.55)
 
     MouseArea {
         anchors { fill: parent; leftMargin: 5*dp; rightMargin: 5*dp; bottomMargin: 5*dp }
@@ -121,6 +123,28 @@ Rectangle {
         backColor: Qt.rgba(0.5, 0.5, 0.5, 1)
         //backColor: Qt.rgba(0.33, 0.33, 0.33, 1)
         //sliderClor: Qt.rgba(0.45, 0.6, 0.1, 1)
+        state: "normal"
+
+        states: [
+            State {
+                name: "normal"
+                PropertyChanges {
+                    target: id_videoProgress
+                    height: 9 * dp
+                    handle.visible: true
+                    mousePosVisible: false
+                }
+            },
+            State {
+                name: "mouseHover"
+                PropertyChanges {
+                    target: id_videoProgress
+                    height: 25 * dp;
+                    handle.visible: false
+                    mousePosVisible: true
+                }
+            }
+        ]
 
         onPositionChanged: {
             if (pressed && (position*to).toFixed() != value) {     // 不能用 !==
@@ -131,10 +155,12 @@ Rectangle {
         onSglMouseEntered: {
             id_videoBottomToolArea.sglMouseEntered();
             sglMouseEnterSlider();
+            state = "mouseHover";
         }
 
         onSglMouseLeaved: {
             sglMouseLeaveSlider();
+            state = "normal";
         }
 
         onSglMouseXChanged: {
@@ -177,6 +203,9 @@ Rectangle {
                 ctx.stroke();
             }
         }
+        onClicked: {
+            connectsglStopVideo();
+        }
     }
 
     ToolButton {
@@ -205,10 +234,14 @@ Rectangle {
                 ctx.fill();
             }
         }
+        onClicked: {
+            sglPreviousVideo();
+        }
     }
 
     ToolButton {
         id: id_playPauseVideo
+        property string btnState: "pause"    // btnState: "playing"/"pause"
         anchors { top: id_videoProgress.bottom; topMargin: btnTopMargin; horizontalCenter: parent.horizontalCenter }
         width: btnSize
         height: btnSize
@@ -217,14 +250,31 @@ Rectangle {
                 const linePadding = 5 * dp;
                 var ctx = getContext("2d");
                 ctx.strokeStyle = btnColor;
-                ctx.lineWidth = 5*dp;
-                ctx.beginPath();
-                ctx.moveTo(parent.width/2-linePadding, 0);
-                ctx.lineTo(parent.width/2-linePadding, parent.height);
-                ctx.moveTo(parent.width/2+linePadding, 0);
-                ctx.lineTo(parent.width/2+linePadding, parent.height);
+                ctx.clearRect(0, 0, width+1, height+1);
+                if (parent.btnState === "pause") {
+                    ctx.lineWidth = 1
+                    ctx.fillStyle = btnColor;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, parent.height);
+                    ctx.lineTo(parent.width/2-linePadding, parent.height);
+                    ctx.lineTo(parent.width-2, parent.height/2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                else if (parent.btnState === "playing") {
+                    ctx.lineWidth = 5*dp;
+                    ctx.beginPath();
+                    ctx.moveTo(parent.width/2-linePadding, 0);
+                    ctx.lineTo(parent.width/2-linePadding, parent.height);
+                    ctx.moveTo(parent.width/2+linePadding, 0);
+                    ctx.lineTo(parent.width/2+linePadding, parent.height);
+                }
                 ctx.stroke();
             }
+        }
+        onClicked: {
+            sglPlayPauseVideo();
         }
     }
 
@@ -256,6 +306,9 @@ Rectangle {
                 ctx.lineTo(parent.width-2, parent.height);
                 ctx.stroke();
             }
+        }
+        onClicked: {
+            sglNextVideo();
         }
     }
 
