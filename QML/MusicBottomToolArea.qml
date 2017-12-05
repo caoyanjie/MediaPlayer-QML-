@@ -166,6 +166,7 @@ Rectangle {
         CustomSlider {
             id: id_musicProgress
             anchors { left: id_cdImg.right; top: id_musicAuthor.bottom; right: parent.right }
+            height: 16 * dp
             toolTipVisible: true
             toolTipText: id_musicCurrentTime.text
 

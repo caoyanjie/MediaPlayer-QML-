@@ -130,7 +130,7 @@ Rectangle {
                 name: "normal"
                 PropertyChanges {
                     target: id_videoProgress
-                    height: 9 * dp
+                    height: 15 * dp
                     handle.visible: true
                     mousePosVisible: false
                 }
