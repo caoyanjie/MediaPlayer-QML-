@@ -57,6 +57,10 @@ Rectangle {
         id_bottomToolArea.forceActiveFocus();
     }
 
+    function setVideoPlayingRate(rate) {
+        id_mediaPlayer.playbackRate = rate;
+    }
+
     Component.onCompleted: {
         id_bottomToolArea.sglSwitchFullScreen.connect(sglSwitchFullScreen);
         id_bottomToolArea.sglShowNormalScreen.connect(sglShowNormalScreen);

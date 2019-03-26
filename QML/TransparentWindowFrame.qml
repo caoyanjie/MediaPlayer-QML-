@@ -429,7 +429,7 @@ Rectangle {
             }
 
             onClicked: {
-                id_loaderThemeSetting.visible = id_loaderThemeSetting.visible ? false : true;
+                id_loaderThemeSetting.visible = !id_loaderThemeSetting.visible;
             }
         }
 
@@ -449,6 +449,10 @@ Rectangle {
 
             onHoveredChanged: {
                 sglWindowTitleBtnHoverd(hovered);
+            }
+
+            onClicked: {
+                id_loaderOptions.visible = !id_loaderOptions.visible;
             }
 
             Loader {
@@ -713,11 +717,18 @@ Rectangle {
             }
         }
 
-        // line
+        // theme line
         Rectangle {
-            id: line
+            // id: id_lineTheme
             width: 1
             anchors { top: id_windowTheme.bottom; bottom: id_loaderThemeSetting.top; horizontalCenter: id_windowTheme.horizontalCenter }
+        }
+
+        // options line
+        Rectangle {
+            // id: id_lineOption
+            width: 1
+            anchors { top: id_windowMenuMore.bottom; bottom: id_loaderOptions.top; horizontalCenter: id_windowMenuMore.horizontalCenter }
         }
 
         // window theme setting loader
@@ -749,7 +760,8 @@ Rectangle {
             transitions: Transition {
                 AnchorAnimation {
                     duration: 200;
-                    easing.type: Easing.InOutQuad}
+                    easing.type: Easing.InOutQuad
+                }
             }
 
             onLoaded: {
@@ -765,6 +777,51 @@ Rectangle {
                 item.sglSetWindowBorderVisible.connect(setWindowBorderVisible);
                 item.sglSetWindowAlpha.connect(setWindowAlpha);
                 item.sglRestoreDefaultSetting.connect(restoreDefaultSetting);
+            }
+
+            onVisibleChanged: {
+                state = visible ? "endAnchors" : "startAnchors";
+                sglThemeSettingVisible(visible);
+            }
+        }
+
+        // window options loader
+        Loader {
+            id: id_loaderOptions
+            visible: false;
+            anchors { right: parent.right; margins: 10 * dp; topMargin: 50 * dp }
+            source: "VideoOptions.qml"
+
+            states: [
+                State {
+                    name: "startChors"
+                    // when: visible == false
+                    AnchorChanges {
+                        target: id_loaderOptions
+                        anchors { bottom: parent.top }
+                    }
+                },
+                State {
+                    name: "endAnchors"
+                    // when: visible == true
+                    AnchorChanges {
+                        target: id_loaderOptions
+                        anchors { top: parent.bottom }
+                    }
+                }
+            ]
+
+            transitions: Transition {
+                AnchorAnimation {
+                    duration: 200;
+                    easing.type: Easing.InOutQuad
+                }
+            }
+
+            onLoaded: {
+                // init item
+                item.handleId = id_windowFrame;
+                item.dp = id_windowFrame.dp;
             }
 
             onVisibleChanged: {
@@ -794,6 +851,9 @@ Rectangle {
             id_windowContent.item.sglVideoPlaying.disconnect(hideWindowBorder);
             id_windowContent.item.sglVideoPlaying.disconnect(hideWindowTitle)
             id_windowContent.item.sglVideoStopped.disconnect(restoreWindow);
+
+            id_loaderOptions.item.sglChangeVideoRate.disconnect(id_windowContent.item.setVideoPlayingRate);
+
             sglThemeSettingVisible.disconnect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
             sglWindowTitleBtnHoverd.disconnect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
             sglMousePositionChanged.disconnect(id_windowContent.item.showLeftToolArea);
@@ -810,9 +870,13 @@ Rectangle {
             id_windowContent.item.sglVideoPlaying.connect(hideWindowBorder);
             id_windowContent.item.sglVideoPlaying.connect(hideWindowTitle)
             id_windowContent.item.sglVideoStopped.connect(restoreWindow);
+
+            id_loaderOptions.item.sglChangeVideoRate.connect(id_windowContent.item.setVideoPlayingRate);
+
             sglThemeSettingVisible.connect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
             sglWindowTitleBtnHoverd.connect(id_windowContent.item.setLeftToolAreaAlwaysVisible);
             sglMousePositionChanged.connect(id_windowContent.item.showLeftToolArea);
+
         }
 
         onLoaded: {
