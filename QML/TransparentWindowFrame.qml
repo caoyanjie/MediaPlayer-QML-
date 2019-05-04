@@ -256,6 +256,9 @@ Rectangle {
 //            //console.log(pinch.scale)
 //            id_rootWindow.width = windowWidth * pinch.scale;
 //            id_rootWindow.height = windowHeight * pinch.scale;
+//            console.log(pinch.point1);
+//            console.log(pinch.point2);
+//            console.log(pinch.pointCount);
 //        }
 //    }
 
@@ -410,6 +413,7 @@ Rectangle {
             width: id_windowTitle.btnWidth
             height: id_windowTitle.btnHeight
             hoverEnabled: true
+            checkable: true
 
             background: Loader {
                 anchors { fill: parent }
@@ -425,11 +429,15 @@ Rectangle {
             }
 
             onHoveredChanged: {
-                sglWindowTitleBtnHoverd(hovered);
+                sglWindowTitleBtnHoverd(checked ? true: hovered);
             }
 
             onClicked: {
                 id_loaderThemeSetting.visible = !id_loaderThemeSetting.visible;
+            }
+
+            onCheckedChanged: {
+                sglWindowTitleBtnHoverd(checked);
             }
         }
 
@@ -440,6 +448,7 @@ Rectangle {
             width: id_windowTitle.btnWidth
             height: id_windowTitle.btnHeight
             hoverEnabled: true
+            checkable: true
 
             background: Loader {
                 anchors { fill: parent }
@@ -448,11 +457,15 @@ Rectangle {
             }
 
             onHoveredChanged: {
-                sglWindowTitleBtnHoverd(hovered);
+                sglWindowTitleBtnHoverd(checked ? true : hovered);
             }
 
             onClicked: {
                 id_loaderOptions.visible = !id_loaderOptions.visible;
+            }
+
+            onCheckedChanged: {
+                sglWindowTitleBtnHoverd(checked);
             }
 
             Loader {
@@ -834,7 +847,7 @@ Rectangle {
             id: com_btnBg
             Rectangle {
                 anchors { fill: parent }
-                color: parent.parent.hovered ? Qt.rgba(0, 0, 0, 0.6) : "transparent"
+                color: parent.parent.hovered || parent.parent.checked ? Qt.rgba(0, 0, 0, 0.6) : "transparent"
             }
         }
     }
