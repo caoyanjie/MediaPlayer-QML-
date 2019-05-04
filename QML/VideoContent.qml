@@ -138,6 +138,90 @@ Rectangle {
         source: id_mediaPlayer
         visible: false
 
+        // 触屏手势触摸事件，左右划 快退快进
+        MultiPointTouchArea {
+            id: id_touchArea
+            anchors { fill: parent; margins: 100 }
+            mouseEnabled: false
+            property real videoStartPosition: 0
+            property int startX: 0
+            property int lastX: 0
+            property int clickedTimes: 0
+            //property bool videoPreviewVisible: false
+            //touchPoints: [
+            //    TouchPoint { id: point1 },
+            //    TouchPoint { id: point2 }
+            //]
+
+            onPressed: {
+                startX = touchPoints[0].x;
+                lastX = startX;
+            }
+
+            onTouchUpdated: {
+                if (touchPoints[0] === undefined) {
+                    return;
+                }
+
+                var currentX = touchPoints[0].x;
+                var currentOffset = currentX - lastX;
+
+                // 没有滑动，只是点击
+                if (currentOffset < 5 && currentOffset > -5) {
+                    return;
+                }
+
+                if (!id_videoPreview.visible) {
+                    id_videoPreview.anchors.horizontalCenter = id_videoOutput.horizontalCenter;
+                    id_videoPreview.anchors.bottom = undefined;
+                    id_videoPreview.anchors.top = id_videoOutput.top;
+                    id_videoPreview.visible = true;
+                    videoStartPosition = id_mediaPlayer.position;
+                    //videoPreviewVisible = true
+                }
+
+               // if (currentOffset < 50) {
+               //     return;
+               // }
+                lastX = currentX;
+                var offset = currentX - startX;
+                var videoTargetPosition = videoStartPosition + offset*5;
+                id_videoPreview.timestamp = videoTargetPosition;
+            }
+
+            onReleased: {
+                var endX = touchPoints[0].x;
+                var offset = endX - startX;
+
+                // 没有滑动，只是点击
+                if (offset < 5 && offset > -5) {
+                    clickedTimes += 1;
+                    id_timerDoubleClick.start();
+
+                    // 双击（在一定时间内连续点击2次）
+                    if (clickedTimes === 2) {
+                        sglSwitchFullScreen();
+                        clickedTimes = 0;
+                    }
+                    return;
+                }
+
+                // 手指滑动结束，视频跳到快进/快退位置，隐藏视频预览小窗口
+                id_mediaPlayer.seek(id_videoPreview.timestamp);
+                id_videoPreview.visible = false;
+            }
+
+            Timer {
+                id: id_timerDoubleClick
+                repeat: false
+                interval: 500
+                triggeredOnStart: false
+                onTriggered: {
+                    id_touchArea.clickedTimes = 0;
+                }
+            }
+        }
+
         onSourceRectChanged: {
             if (sourceRect.width <=0 || sourceRect.height <= 0) {
                 return;
@@ -188,13 +272,13 @@ Rectangle {
 
     VideoPreview {
         id: id_videoPreview
-        anchors { bottom: id_bottomToolArea.top }
         width: 256 * dp
         height: 192 * dp
         file: id_mediaPlayer.source
         visible: false
     }
 
+    // hide error tip
     Text {
         id: id_errText
         anchors { horizontalCenter: parent.horizontalCenter; bottom: id_videoOpenerImg.top }
@@ -346,7 +430,9 @@ Rectangle {
         }
 
         onSglMouseEnterSlider: {
-            //id_videoPreview.visible = true;
+            id_videoPreview.anchors.top = undefined;
+            id_videoPreview.anchors.horizontalCenter = undefined;
+            id_videoPreview.anchors.bottom = id_bottomToolArea.top;
         }
 
         onSglMouseLeaveSlider: {
