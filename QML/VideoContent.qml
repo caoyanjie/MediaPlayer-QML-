@@ -145,9 +145,7 @@ Rectangle {
             mouseEnabled: false
             property real videoStartPosition: 0
             property int startX: 0
-            property int lastX: 0
             property int clickedTimes: 0
-            //property bool videoPreviewVisible: false
             //touchPoints: [
             //    TouchPoint { id: point1 },
             //    TouchPoint { id: point2 }
@@ -155,7 +153,6 @@ Rectangle {
 
             onPressed: {
                 startX = touchPoints[0].x;
-                lastX = startX;
             }
 
             onTouchUpdated: {
@@ -164,28 +161,24 @@ Rectangle {
                 }
 
                 var currentX = touchPoints[0].x;
-                var currentOffset = currentX - lastX;
 
                 // 没有滑动，只是点击
-                if (currentOffset < 5 && currentOffset > -5) {
+                var totalOffset = currentX - startX;
+                if (Math.abs(totalOffset) < 5) {
                     return;
                 }
 
+                // 第一次 onTouchUpdate,之所以不写在 onPressed 里是因为考虑到点一下就松开而不是滑动的那种情况
                 if (!id_videoPreview.visible) {
                     id_videoPreview.anchors.horizontalCenter = id_videoOutput.horizontalCenter;
                     id_videoPreview.anchors.bottom = undefined;
                     id_videoPreview.anchors.top = id_videoOutput.top;
                     id_videoPreview.visible = true;
                     videoStartPosition = id_mediaPlayer.position;
-                    //videoPreviewVisible = true
                 }
 
-               // if (currentOffset < 50) {
-               //     return;
-               // }
-                lastX = currentX;
-                var offset = currentX - startX;
-                var videoTargetPosition = videoStartPosition + offset*5;
+                // 设置视频预览窗口的视频进度
+                var videoTargetPosition = videoStartPosition + totalOffset * 20;
                 id_videoPreview.timestamp = videoTargetPosition;
             }
 
@@ -276,6 +269,34 @@ Rectangle {
         height: 192 * dp
         file: id_mediaPlayer.source
         visible: false
+        property int lastTime: 0
+
+        onTimestampChanged: {
+            // 视频预览窗口显示当前快进到的时间
+            var totalSecondses = parseInt(timestamp / 1000);
+            var hours = parseInt(totalSecondses / 3600);
+            var mins = parseInt(totalSecondses % 3600 / 60);
+            var secondses = parseInt(totalSecondses % 60);
+
+            var hoursStr = hours > 9 ? hours.toString() : "0" + hours.toString();
+            var minsStr = mins > 9 ? mins.toString() : "0" + mins.toString();
+            var secondsesStr = secondses > 9 ? secondses.toString() : "0" + secondses.toString();
+
+            id_videoPreviewTime.text = hoursStr + ":" + minsStr + ":" + secondsesStr;
+
+            // 更新太快，视频预览窗口是黑的，qtav库的问题
+            if (lastTime-timestamp < 200) {
+                return;
+            }
+
+            lastTime = timestamp;
+        }
+
+        Text {
+            id: id_videoPreviewTime
+            anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom }
+            color: "white"
+        }
     }
 
     // hide error tip
