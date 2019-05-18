@@ -179,7 +179,7 @@ Rectangle {
 
                 // 设置视频预览窗口的视频进度
                 var videoTargetPosition = videoStartPosition + totalOffset * 20;
-                id_videoPreview.timestamp = videoTargetPosition;
+                id_videoPreview.setVideoPosition(videoTargetPosition);
             }
 
             onReleased: {
@@ -269,11 +269,11 @@ Rectangle {
         height: 192 * dp
         file: id_mediaPlayer.source
         visible: false
-        property int lastTime: 0
+        property real lastTime: 0
 
-        onTimestampChanged: {
+        function setVideoPosition(position) {
             // 视频预览窗口显示当前快进到的时间
-            var totalSecondses = parseInt(timestamp / 1000);
+            var totalSecondses = parseInt(position / 1000);
             var hours = parseInt(totalSecondses / 3600);
             var mins = parseInt(totalSecondses % 3600 / 60);
             var secondses = parseInt(totalSecondses % 60);
@@ -285,11 +285,14 @@ Rectangle {
             id_videoPreviewTime.text = hoursStr + ":" + minsStr + ":" + secondsesStr;
 
             // 更新太快，视频预览窗口是黑的，qtav库的问题
-            if (lastTime-timestamp < 200) {
+            var date = new Date();
+            var currentTime = date.getTime();
+            if (currentTime - lastTime < 500) {
                 return;
             }
+            timestamp = position;
 
-            lastTime = timestamp;
+            lastTime = currentTime;
         }
 
         Text {
@@ -479,7 +482,7 @@ Rectangle {
             if (currentTime - lastTime < 300) {
                 return;
             }
-            id_videoPreview.timestamp = videoPosition;
+            id_videoPreview.setVideoPosition(videoPosition);
             lastTime = currentTime;
 
             id_videoPreview.visible = true;
