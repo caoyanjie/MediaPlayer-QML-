@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick av avwidgets xml
+QT += quick av avwidgets xml
 CONFIG += c++11
 
 # x86 and x64 specific macros defines

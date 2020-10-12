@@ -1,6 +1,6 @@
-import QtQuick 2.0
-import QtQuick.Window 2.0
-import QtQuick.Controls 2.0
+import QtQuick 2.9
+import QtQuick.Window 2.2
+import QtQuick.Controls 2.2
 import QtQuick.Dialogs 1.2
 import QtAV 1.7         // third party
 import QtCPlusPlus.Application 1.0
@@ -47,18 +47,17 @@ Rectangle {
     }
 
     function playMedia(fileUrl) {
-        if (fileUrl === id_mediaPlayer.source) {
-            id_mediaPlayer.seek(100);		// 不能 seek(0)，不会暂停到 0 处
-        }
-        else {
-            id_mediaPlayer.source = fileUrl;
+        if (fileUrl === id_video.source) {
+            id_video.seek(100);		// 不能 seek(0)，不会暂停到 0 处
+        } else {
+            id_video.source = fileUrl;
         }
         id_leftToolArea.updatePlaylist(fileUrl);
         id_bottomToolArea.forceActiveFocus();
     }
 
     function setVideoPlayingRate(rate) {
-        id_mediaPlayer.playbackRate = rate;
+        id_video.playbackRate = rate;
     }
 
     Component.onCompleted: {
@@ -75,68 +74,12 @@ Rectangle {
         id: id_application
     }
 
-    AVPlayer {
-        id: id_mediaPlayer
+    Video {
+        id: id_video
         autoPlay: true
         volume: 0.5
-
-        onPlaying: {
-            id_videoOutput.visible = true;
-            sglVideoPlaying();
-            id_bottomToolArea.setVideoPlayingState();
-        }
-
-        onPaused: {
-            id_bottomToolArea.setVideoPauseState();
-        }
-
-        onStopped: {
-            id_videoOutput.visible = false;
-            id_bottomToolArea.videoPlayingEnd();
-            id_bottomToolArea.setVideoPauseState();
-        }
-
-        onPositionChanged: {
-            id_bottomToolArea.setVideoProgress(position);
-            if (duration-position < 500) {
-                if (id_leftToolArea.isLastVideo(source.toString())) {
-                    sglVideoStopped();
-                }
-                else {
-                    id_leftToolArea.playNextVideo(source.toString());
-                }
-            }
-        }
-
-        onError: {
-            switch (error) {
-            case AVPlayer.NoError:
-                id_errText.text = ''
-                break;
-            case AVPlayer.ResourceError:
-                console.log('ResourceError');
-                break;
-            case AVPlayer.FormatError:
-                id_errText.text = '视频格式错误，无法渲染！@_@!';
-                break;
-            case AVPlayer.NetworkError:
-                console.log('网络错误！');
-                break;
-            case AVPlayer.AccessDenied:
-                console.log('AccessDenied');
-                break;
-            case AVPlayer.ServiceMissing:
-                console.log('ServiceMissing');
-                break;
-            }
-        }
-    }
-
-    VideoOutput {
-        id: id_videoOutput
-        anchors { fill: parent }
-        source: id_mediaPlayer
         visible: false
+        anchors { fill: parent }
 
         // 触屏手势触摸事件，左右划 快退快进
         MultiPointTouchArea {
@@ -170,11 +113,11 @@ Rectangle {
 
                 // 第一次 onTouchUpdate,之所以不写在 onPressed 里是因为考虑到点一下就松开而不是滑动的那种情况
                 if (!id_videoPreview.visible) {
-                    id_videoPreview.anchors.horizontalCenter = id_videoOutput.horizontalCenter;
+                    id_videoPreview.anchors.horizontalCenter = id_video.horizontalCenter;
                     id_videoPreview.anchors.bottom = undefined;
-                    id_videoPreview.anchors.top = id_videoOutput.top;
+                    id_videoPreview.anchors.top = id_video.top;
                     id_videoPreview.visible = true;
-                    videoStartPosition = id_mediaPlayer.position;
+                    videoStartPosition = id_video.position;
                 }
 
                 // 设置视频预览窗口的视频进度
@@ -200,7 +143,7 @@ Rectangle {
                 }
 
                 // 手指滑动结束，视频跳到快进/快退位置，隐藏视频预览小窗口
-                id_mediaPlayer.seek(id_videoPreview.timestamp);
+                id_video.seek(id_videoPreview.timestamp);
                 id_videoPreview.visible = false;
             }
 
@@ -215,30 +158,95 @@ Rectangle {
             }
         }
 
-        onSourceRectChanged: {
-            if (sourceRect.width <=0 || sourceRect.height <= 0) {
+        onPlaying: {
+            visible = true
+            sglVideoPlaying();
+            id_bottomToolArea.setVideoPlayingState();
+        }
+
+        onPaused: {
+            id_bottomToolArea.setVideoPauseState();
+        }
+
+        onStopped: {
+            visible = false;
+            id_bottomToolArea.videoPlayingEnd();
+            id_bottomToolArea.setVideoPauseState();
+        }
+
+        onPositionChanged: {
+            id_bottomToolArea.setVideoProgress(position);
+            if (duration-position < 500) {
+                if (id_leftToolArea.isLastVideo(source.toString())) {
+                    sglVideoStopped();
+                } else {
+                    id_leftToolArea.playNextVideo(source.toString());
+                }
+            }
+        }
+
+        onErrorChanged: {
+            switch (error) {
+            case AVPlayer.NoError:
+                id_errText.text = ''
+                break;
+            case AVPlayer.ResourceError:
+                console.log('ResourceError');
+                break;
+            case AVPlayer.FormatError:
+                id_errText.text = '视频格式错误，无法渲染！@_@!';
+                break;
+            case AVPlayer.NetworkError:
+                console.log('网络错误！');
+                break;
+            case AVPlayer.AccessDenied:
+                console.log('AccessDenied');
+                break;
+            case AVPlayer.ServiceMissing:
+                console.log('ServiceMissing');
+                break;
+            }
+        }
+
+        onSourceAspectRatioChanged: {
+            /*
+            console.log(7)
+            console.log(sourceAspectRatio)          // 1.777777777
+            console.log(metaData.pixelFormat)       // yuv420p
+            console.log(metaData.sampleFormat)      // fltp
+            console.log(metaData.sampleRate)        // 44100
+            console.log(metaData.size)              // 4780770
+            console.log(metaData.title)
+            console.log(metaData.videoBitRate)      // 0
+            console.log(metaData.videoCodec)        // h264
+            console.log(metaData.videoFrameRate)    // 30
+            console.log(metaData.videoFrames)       // 0
+            console.log(metaData.resolution)        // (1280, 720)
+            */
+
+            const videoSize = metaData.resolution
+
+            if (videoSize.width <=0 || videoSize.height <= 0) {
+                console.log("error")
                 return;
             }
 
             // resize window
             if (id_bottomToolArea.isWindowAutoResize()) {
-                var desWidth = sourceRect.width * id_windowFrame.dp * 0.8;
-                var desHeight = sourceRect.height * id_windowFrame.dp * 0.8;
+                var desWidth = videoSize.width * id_windowFrame.dp * 0.8;
+                var desHeight = videoSize.height * id_windowFrame.dp * 0.8;
 
                 if (desWidth <= Screen.width && desHeight <= Screen.height) {
                     id_rootWindow.width = desWidth;
                     id_rootWindow.height = desHeight;
-                }
-                else {
-                    var ratio = sourceRect.width / sourceRect.height;
-                    if (ratio > 1) {
+                } else {
+                    if (sourceAspectRatio > 1) {
                         id_rootWindow.width = desWidth > Screen.width ? Screen.width : desWidth;
-                        id_rootWindow.height = id_rootWindow.width / ratio;
+                        id_rootWindow.height = id_rootWindow.width / sourceAspectRatio;
 
-                    }
-                    else {
+                    } else {
                         id_rootWindow.height = desHeight > Screen.height ? Screen.height : desHeight;
-                        id_rootWindow.width = id_rootWindow.height * ratio;
+                        id_rootWindow.width = id_rootWindow.height * sourceAspectRatio;
                     }
                 }
 
@@ -248,18 +256,7 @@ Rectangle {
             }
 
             // set video total time
-            id_bottomToolArea.setVideoTotalTime(source.metaData.duration);
-
-            // video information
-            console.log(id_mediaPlayer.metaData.audioBitRate);
-            console.log(id_mediaPlayer.metaData.audioCodec);
-            console.log(id_mediaPlayer.metaData.channelCount);
-            console.log(id_mediaPlayer.metaData.mediaType);
-            //console.log(id_mediaPlayer.metaData.albumArtist);		// undefined
-            //console.log(id_mediaPlayer.metaData.albumTitle);		// undefined
-            //console.log(id_mediaPlayer.metaData.author);
-            //console.log(id_mediaPlayer.metaData.averageLevel);
-            //console.log(id_mediaPlayer.metaData.category);
+            id_bottomToolArea.setVideoTotalTime(metaData.duration)
         }
     }
 
@@ -267,7 +264,7 @@ Rectangle {
         id: id_videoPreview
         width: 256 * dp
         height: 192 * dp
-        file: id_mediaPlayer.source
+        file: id_video.source
         visible: false
         property real lastTime: 0
 
@@ -325,7 +322,7 @@ Rectangle {
         width: 170 * dp
         height: width
         source: "/Images/videoOpener.png"
-        visible: !id_videoOutput.visible // !id_mediaPlayer.playbackState || id_mediaPlayer.playbackState === AVPlayer.StoppedState
+        visible: !id_video.visible // !id_video.playbackState || id_video.playbackState === AVPlayer.StoppedState
 
         Button {
             id: id_playlistChoose
@@ -464,16 +461,15 @@ Rectangle {
         }
 
         onSglMouseXOnSliderChanged: {
-            if (AVPlayer.PlayingState != id_mediaPlayer.playbackState) {
+            if (AVPlayer.PlayingState != id_video.playbackState) {
                 return;
             }
 
             var leftPos = x - id_videoPreview.width / 2;
             if (leftPos < 0) {
                 leftPos = 0;
-            }
-            else if (leftPos + id_videoPreview.width > id_videoOutput.width) {
-                leftPos = id_videoOutput - id_videoPreview.width;
+            } else if (leftPos + id_videoPreview.width > id_video.width) {
+                leftPos = id_video - id_videoPreview.width;
             }
 
             id_videoPreview.x = leftPos;
@@ -489,13 +485,13 @@ Rectangle {
         }
 
         onSglSetVideoPosition: {
-            if (value !== id_mediaPlayer.position) {
-                id_mediaPlayer.seek(value);
+            if (value !== id_video.position) {
+                id_video.seek(value);
             }
         }
 
         onSglStopVideo: {
-            id_mediaPlayer.stop();
+            id_video.stop();
             id_windowContent.sglVideoStopped();
         }
 
@@ -504,28 +500,27 @@ Rectangle {
         }
 
         onSglPlayPauseVideo: {
-            if (id_mediaPlayer.playbackState === AVPlayer.PlayingState) {
-                id_mediaPlayer.pause();
-            }
-            else {
-                id_mediaPlayer.play();
+            if (id_video.playbackState === AVPlayer.PlayingState) {
+                id_video.pause();
+            } else {
+                id_video.play();
             }
         }
 
         onSglAddVideoPosition: {
-            id_mediaPlayer.seek(id_mediaPlayer.position + 5000);
+            id_video.seek(id_video.position + 5000);
         }
 
         onSglSubstractVideoPosition: {
-            id_mediaPlayer.seek(id_mediaPlayer.position - 3000);
+            id_video.seek(id_video.position - 3000);
         }
 
         onSglAddVideoVolume: {
-            id_mediaPlayer.volume += 0.1
+            id_video.volume += 0.1
         }
 
         onSglSubtractVideoVolume: {
-            id_mediaPlayer.volume -= 0.1
+            id_video.volume -= 0.1
         }
     }
 
